@@ -1,0 +1,25 @@
+assistant_llm:
+  # put the unique_model_id that you specified in llm_config.yaml
+  prompt_opt: az_gpt_4
+dir_info:
+  # Base directory for everything
+  base_dir: C:\go\prompt_wizard
+  # Inside base_dir, name of dir which should store log files
+  log_dir_name: glue_logs
+#name of your experiment
+experiment_name: PromptWizard_Experiment_1
+mode: offline
+# Description of your experiment
+description: Experiment to optimize prompt for a given task
+# content_moderation is optional. If you don't want to specify content_moderation,
+# remove this entire field & its sub-fields.
+content_moderation:
+  # If content_severity crosses this threshold then the processing would be blocked
+  content_severity_threshold: 2
+  # Azure AI Content Safety (AACS) Endpoint
+  aacs:
+    subscription_id: "**"
+    resource_group: "**"
+    name: "vellm_aacs"
+    location: "east us"
+    sku_name: "S0"
