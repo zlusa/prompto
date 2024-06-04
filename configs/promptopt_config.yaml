@@ -5,7 +5,7 @@
 # Supported prompt refinement techniques: Basic, RecursiveEval, MedPrompt
 # Uncomment techniques that you want to use
 ############################ Critique Task Description Start ############################
-prompt_technique_name: "prompt_wizard"
+prompt_technique_name: "critique_n_refine"
 # unique_model_id of model defined in llm_config.yaml
 unique_model_id: az_gpt_4
 # Number of iterations for conducting <mutation_rounds>  rounds of mutation of task description
@@ -27,17 +27,17 @@ min_correct_count: 3
 max_eval_batches: 6
 # Number of top best performing prompts to be considered for next iterations
 top_n: 1
-# Description of task. This will be fed to prompt
-task_description: "Answer biomedical research questions with yes/no/maybe using the corresponding abstracts."
-# Base instruction, in line with your dataset. This will be fed to prompt
-base_instruction: "Lets think step by step to arrive at the answer to this biomedical research question."
-# Instruction for specifying answer format
-answer_format: "You need to answer each of the questions separately with yes/ no/ maybe."
+# Description of task. e.g. "Solving a math problem", "Solving a biomedical MCQ based exam". More detailed the better.
+task_description: "4 choice multiple-choice questions from various branches of knowledge. These questions spans from "
+# Chain-of-thoughts based thinking style that's most aligned with your dataset. Default is "Lets think step by step."
+base_instruction: "Lets think step by step."
+# Instruction to LLM for specifying format in which your answer should be provided.
+answer_format: "For each question present the reasoning followed correct option out of [{options}]."
 # Number of samples from dataset, set aside as training data. In every iteration we would be drawing
 # `questions_batch_size` examples from training data with replacement.
 seen_set_size: 25
 # Number of examples to be given for few shots
-few_shot_count: 5
+few_shot_count: 3
 # Generate synthetic reasoning
 generate_reasoning: true
 # Generate description of an expert which can solve the task at hand

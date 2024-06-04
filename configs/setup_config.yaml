@@ -2,15 +2,17 @@ assistant_llm:
   # put the unique_model_id that you specified in llm_config.yaml
   prompt_opt: az_gpt_4
 dir_info:
-  # Base directory for everything
-  base_dir: C:\go\prompt_wizard
-  # Inside base_dir, name of dir which should store log files
+  # Base directory in which every generated file would be saved.
+  base_dir: /home/user/VeLLMPlatform
+  # Directory inside which system log files should be saved
   log_dir_name: glue_logs
-#name of your experiment
-experiment_name: PromptWizard_Experiment_1
+experiment_name: gsm8k_redteam
+# Many features are different for mode: online/offline. For eg
+# 1) Print of logs happens on console for offline mode
+# 2) LLM Queue gets instantiated only in online mode
 mode: offline
-# Description of your experiment
-description: Experiment to optimize prompt for a given task
+# Full length description of the experiment. This would be logged.
+description:
 # content_moderation is optional. If you don't want to specify content_moderation,
 # remove this entire field & its sub-fields.
 content_moderation:
