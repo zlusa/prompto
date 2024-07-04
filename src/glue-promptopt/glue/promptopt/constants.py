@@ -7,7 +7,7 @@ from glue.common.base_classes import UniversalBaseClass
 # Set of Prompt Management Techniques supported by Vellm co-pilot
 # Hyperparameters defined in promptopt_config.yaml
 class SupportedPromptOpt(Enum):
-    CRITIQUE_N_REFINE = "prompt_wizard"
+    CRITIQUE_N_REFINE = "critique_n_refine"
 
     @classmethod
     def all_values(cls):
