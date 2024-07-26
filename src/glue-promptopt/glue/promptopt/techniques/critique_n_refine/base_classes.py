@@ -24,6 +24,7 @@ class CritiqueNRefinePromptPool(PromptPool):
     expert_template: str
     generate_reason_template: str
     reason_optimization_template: str
+    metaprompt_guidelines: str
 
 
 @dataclass

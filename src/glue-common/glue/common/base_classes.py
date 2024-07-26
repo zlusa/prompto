@@ -55,6 +55,7 @@ class AzureAOIModels(LLMModel, UniversalBaseClass):
 @dataclass
 class AzureAOILM(UniversalBaseClass):
     api_key: str
+    use_azure_ad: bool
     api_version: str
     api_type: str
     azure_endpoint: str
@@ -117,12 +118,16 @@ class AACS:
     name: str
     location: str
     sku_name: str
+    use_azure_ad: bool
 
 
 @dataclass
 class ContentModeration(UniversalBaseClass):
     # Class for all content moderation handles
     content_severity_threshold: int
+    enable_moderation: bool
+    jailbreak_detection: bool
+    include_metaprompt_guidelines: bool
     aacs: AACS
 
     def __post_init__(self):

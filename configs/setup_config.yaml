@@ -16,12 +16,22 @@ description:
 # content_moderation is optional. If you don't want to specify content_moderation,
 # remove this entire field & its sub-fields.
 content_moderation:
+  # If set to true, then content_moderation would be enabled.
+  enable_moderation: true
   # If content_severity crosses this threshold then the processing would be blocked
   content_severity_threshold: 2
+  # If jailbreak detection is required. 
+  jailbreak_detection: true
+  # Additional guidelines to constrain any malicious behavior
+  include_metaprompt_guidelines: true
   # Azure AI Content Safety (AACS) Endpoint
   aacs:
     subscription_id: "**"
     resource_group: "**"
-    name: "vellm_aacs"
+    name: "resource_name"
     location: "east us"
     sku_name: "S0"
+    use_azure_ad: true
+    ## Specify the authentication method to be used for AACS
+    ## if use_azure_ad is set to True, then use the following resource will be accessed using Azure AD
+    ## else the resource will be accessed using Key based authentication, key is automatically fetched. No need to pass the key.

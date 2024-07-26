@@ -56,3 +56,4 @@ class DirNames:
 @dataclass
 class URLs:
     AZ_CREDENTIAL_URL= "https://management.azure.com/.default"
+    AZ_COGNITIVE_SERVICES_URL = "https://cognitiveservices.azure.com/.default"

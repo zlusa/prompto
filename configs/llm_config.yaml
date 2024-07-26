@@ -1,5 +1,6 @@
 azure_open_ai:
   api_key: "**"
+  use_azure_ad: True
   api_version: "2023-03-15-preview"
   api_type: "azure"
   azure_endpoint: "https://**.openai.azure.com/"

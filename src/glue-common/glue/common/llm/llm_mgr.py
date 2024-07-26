@@ -4,11 +4,13 @@ from llama_index.core.llms import ChatMessage
 from llama_index.core.llms import LLM
 from tenacity import retry, stop_after_attempt, wait_fixed, wait_random
 
+from azure.identity import DefaultAzureCredential, InteractiveBrowserCredential
+
 from glue.common.base_classes import LLMConfig
 from glue.common.constants.str_literals import InstallLibs, OAILiterals, \
-    OAILiterals, LLMLiterals, LLMOutputTypes
+    OAILiterals, LLMLiterals, LLMOutputTypes, URLs
 from glue.common.llm.llm_helper import get_token_counter
-from glue.common.exceptions import GlueLLMException
+from glue.common.exceptions import GlueLLMException, GlueAuthenticationException
 from glue.common.utils.runtime_tasks import install_lib_if_missing
 from glue.common.utils.logging import get_glue_logger
 from glue.common.utils.runtime_tasks import str_to_class
@@ -64,6 +66,9 @@ class LLMMgr:
             from llama_index.embeddings.azure_openai import AzureOpenAIEmbedding
             from llama_index.multi_modal_llms.azure_openai import AzureOpenAIMultiModal
 
+            if az_llm_config.use_azure_ad:
+                az_llm_config.api_key = None
+            
             for azure_oai_model in az_llm_config.azure_oai_models:
                 callback_mgr = None
                 if azure_oai_model.track_tokens:
@@ -79,6 +84,7 @@ class LLMMgr:
                         AzureOpenAI(model=azure_oai_model.model_name_in_azure,
                                     deployment_name=azure_oai_model.deployment_name_in_azure,
                                     api_key=az_llm_config.api_key,
+                                    use_azure_ad=az_llm_config.use_azure_ad,
                                     azure_endpoint=az_llm_config.azure_endpoint,
                                     api_version=az_llm_config.api_version,
                                     callback_manager=callback_mgr
@@ -88,6 +94,7 @@ class LLMMgr:
                         AzureOpenAIEmbedding(model=azure_oai_model.model_name_in_azure,
                                              deployment_name=azure_oai_model.deployment_name_in_azure,
                                              api_key=az_llm_config.api_key,
+                                             use_azure_ad=az_llm_config.use_azure_ad,
                                              azure_endpoint=az_llm_config.azure_endpoint,
                                              api_version=az_llm_config.api_version,
                                              callback_manager=callback_mgr
@@ -98,6 +105,7 @@ class LLMMgr:
                         AzureOpenAIMultiModal(model=azure_oai_model.model_name_in_azure,
                                               deployment_name=azure_oai_model.deployment_name_in_azure,
                                               api_key=az_llm_config.api_key,
+                                              use_azure_ad=az_llm_config.use_azure_ad,
                                               azure_endpoint=az_llm_config.azure_endpoint,
                                               api_version=az_llm_config.api_version,
                                               max_new_tokens=4096

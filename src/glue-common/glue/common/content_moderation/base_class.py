@@ -8,6 +8,7 @@ class ContentModeration:
     """
     def __init__(self, setup_config: SetupConfig):
         self.setup_config = setup_config
+        self.include_metaprompt_guidelines = setup_config.content_moderation.include_metaprompt_guidelines
         pass
 
     def is_text_safe(self, text) -> bool:

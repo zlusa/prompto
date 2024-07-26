@@ -8,6 +8,7 @@ from paramlogger import ParamLogger
 from paramlogger.constants import LogLiterals
 from glue.common.base_classes import SetupConfig, UniversalBaseClass
 from glue.common.llm.llm_mgr import LLMMgr
+from glue.common.content_moderation import ContentModeration
 from glue.common.constants.log_strings import CommonLogsStr
 from glue.promptopt.constants import PromptOptimizationParams, SupportedPromptOpt
 from glue.promptopt.techniques.common_logic import DatasetSpecificProcessing, PromptOptimizer
@@ -33,10 +34,11 @@ class CritiqueNRefine(PromptOptimizer, UniversalBaseClass):
     # This has to defined outside of constructor, so that it can be used as decorator.
     iolog = ParamLogger()
 
-    def __init__(self, dataset: List, base_path: str, llm_pool: Dict, setup_config: SetupConfig,
+    def __init__(self, dataset: List, base_path: str, llm_pool: Dict, content_moderator: ContentModeration, setup_config: SetupConfig,
                  prompt_pool: CritiqueNRefinePromptPool, data_processor: DatasetSpecificProcessing, logger):
         self.dataset = dataset
         self.llm_pool = llm_pool
+        self.content_moderator = content_moderator
         self.setup_config = setup_config
         self.data_processor = data_processor
         self.logger = logger
@@ -55,7 +57,13 @@ class CritiqueNRefine(PromptOptimizer, UniversalBaseClass):
         """
         if not system_prompt:
             system_prompt = self.prompt_pool.system_prompt
-
+            
+        if not (self.content_moderator.is_text_safe(user_prompt) and self.content_moderator.is_text_safe(system_prompt)):
+            raise Exception("Text is not safe for work, Pipeline skips the execution.")
+        
+        if self.content_moderator.include_metaprompt_guidelines:
+            system_prompt += self.prompt_pool.metaprompt_guidelines
+            
         messages = [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt}
@@ -401,6 +409,9 @@ class CritiqueNRefine(PromptOptimizer, UniversalBaseClass):
 
         current_base_instruction = params.base_instruction
 
+        if not self.content_moderator.is_text_safe(current_base_instruction):
+            raise Exception("Text is not safe for work, Pipeline skips the execution.")
+        
         # Mutate and refine task description
         for round_num in tqdm(range(1, params.mutate_refine_iterations+1), desc="Iterations completed: "):
             self.logger.info(f"{CommonLogsStr.LOG_SEPERATOR} + Starting iteration: {round_num} \n "

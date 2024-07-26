@@ -6,6 +6,7 @@ from typing import Any
 from glue.common.base_classes import LLMConfig, SetupConfig
 from glue.common.constants.log_strings import CommonLogsStr
 from glue.common.llm.llm_mgr import LLMMgr
+from glue.common.content_moderation import get_content_moderator_handle
 from glue.common.utils.logging import get_glue_logger, set_logging_config
 from glue.common.utils.file import read_jsonl, yaml_to_class, yaml_to_dict, read_jsonl_row
 from paramlogger import ParamLogger
@@ -72,7 +73,9 @@ class GluePromptOpt:
         self.prompt_pool = yaml_to_class(prompt_pool_path, promptpool_cls, default_yaml_path)
         llm_config = yaml_to_class(llm_config_path, LLMConfig)
         llm_pool = LLMMgr.get_llm_pool(llm_config)
-
+        
+        content_moderator = get_content_moderator_handle(self.setup_config)
+        
         dataset = read_jsonl(dataset_jsonl)
         training_dataset = dataset[:self.prompt_opt_param.seen_set_size]
         self.prompt_opt_param.answer_format += self.prompt_pool.ans_delimiter_instruction
@@ -89,7 +92,7 @@ class GluePromptOpt:
         # This iolog is going to be used when doing complete evaluation over test-dataset
         self.iolog.reset_eval_glue(join(base_path, "evaluation"))
 
-        self.prompt_opt = prompt_opt_cls(training_dataset, base_path, llm_pool, self.setup_config,
+        self.prompt_opt = prompt_opt_cls(training_dataset, base_path, llm_pool, content_moderator, self.setup_config,
                                          self.prompt_pool, self.data_processor, self.logger)
 
     def get_best_prompt(self) -> (str, Any):
