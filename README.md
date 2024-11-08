@@ -26,11 +26,13 @@
 
 ### Main Algorithm
 <img src="./images/overview.png" >
-
+<p style="text-align: center;">Overview of the PromptWizard framework</p>
 
 <p align="center">
   <img src="./images/iterative_flowchart-1.png" width="49.5%" />
   <img src="./images/sequential_flowchart-1.png" width="49.5%" />
+  <span style="text-align: left; padding-left: 25px;">Process of iterative optimization of instructions</span>
+  <span style="text-align: left; padding-left: 160px;">Process of sequential optimization of instruction and examples</span>
 </p>
 
 ## Installation ⬇️
