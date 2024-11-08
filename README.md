@@ -30,10 +30,13 @@
 
 <p align="center">
   <img src="./images/iterative_flowchart-1.png" width="49.5%" />
-  <img src="./images/sequential_flowchart-1.png" width="49.5%" />
+<p style="text-align: left; padding-left: 25px;">Process of iterative optimization of instructions</p>
 </p>
-<span style="text-align: left; padding-left: 25px;">Process of iterative optimization of instructions</span>
-  <span style="text-align: left; padding-left: 160px;">Process of sequential optimization of instruction and examples</span>
+
+<p align="center">
+<img src="./images/sequential_flowchart-1.png" width="49.5%" />
+  <p style="text-align: left; padding-left: 160px;">Process of sequential optimization of instruction and examples</p>
+</p>
 
 ## Installation ⬇️
 
