@@ -143,8 +143,10 @@ Following are some of best pracitices we followed during are experiments
 
 ## Results 📈
 
-<div style="text-align: center;">
+<div style="text-align:">
+<center>
 <img src="./images/curve.png" width="342" height="242">
+</center>
 </div>
 
 - The fiqure shows the performance profile curve for the instruction induction
