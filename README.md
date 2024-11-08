@@ -144,9 +144,10 @@ Following are some of best pracitices we followed during are experiments
 
 ## Results 📈
 
-<div style="text-align: center;">
-<img src="./images/curve.png" width="342" height="242">
-</div>
+<p align="center">
+  <img src= "./images/curve.png" width="45%" />
+</p>
+
 
 - The fiqure shows the performance profile curve for the instruction induction
 tasks. The performance profile curve [(Dolan & Moré, 2002)](https://arxiv.org/abs/cs/0102001) visualizes how frequently
