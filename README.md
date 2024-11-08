@@ -26,11 +26,11 @@
 
 ### Main Algorithm
 <img src="./images/overview.png" >
-<p style="text-align: center;">Overview of the PromptWizard framework</p>
+<p align="center">Overview of the PromptWizard framework</p>
 
 <p align="center">
   <img src="./images/iterative_flowchart-1.png" width="49.5%" />
-<p style="text-align: left; padding-left: 25px;">Process of iterative optimization of instructions</p>
+<p align="center">Process of iterative optimization of instructions</p>
 </p>
 
 <p align="center">
@@ -164,6 +164,7 @@ Following are some of best pracitices we followed during are experiments
 
 <p align="center">
   <img src= "./images/curve.png" width="45%" />
+  <p align="center">PromptWizard outperforms all other prompt optimization methods on the Instruction Induction task</p>
 </p>
 
 
