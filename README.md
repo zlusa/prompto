@@ -6,9 +6,11 @@
     <img src=https://img.shields.io/badge/arXiv-2409.10566-b31b1b.svg>
   </a>
   <a href=''>
+    <img src=images/msr_blog.png width="16">
     Blog Post
   </a>
   <a href=''>
+    <img src=images/github.png width="16">
     Project Website
   </a>
 </p>
