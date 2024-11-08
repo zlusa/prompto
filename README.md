@@ -1,7 +1,18 @@
 
 # PromptWizard 🧙
 
-[![arXiv](https://img.shields.io/badge/arXiv-2405.18369-b31b1b.svg)](https://arxiv.org/abs/2405.18369)
+<p align="left">
+  <a href='https://arxiv.org/abs/2405.18369'>
+    <img src=https://img.shields.io/badge/arXiv-2409.10566-b31b1b.svg>
+  </a>
+  <a href=''>
+    Blog Post
+  </a>
+  <a href=''>
+    Project Website
+  </a>
+</p>
+
 
 > **PromptWizard: Task-Aware Prompt Optimization Framework**<br>
 > Eshaan Agarwal, Joykirat Singh, Vivek Dani, Raghav Magazine, Tanuja Ganu, Akshay Nambi <br>
