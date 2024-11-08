@@ -174,7 +174,7 @@ tasks. The performance profile curve visualizes how frequently
 different approaches’ performance is within a given distance of the best performance. In this curve,
 the x-axis (τ) represents the performance ratio relative to the best-performing method, and the y-axis
 (p(τ )) reflects the fraction of tasks where a method’s performance is within this ratio. So for a given
-method, the curve tells what percentage of the tasks are within τ distance to the best performance. \
+method, the curve tells what percentage of the tasks are within τ distance to the best performance. 
 
 
 ## How to contribute: ✋
