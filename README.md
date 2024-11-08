@@ -25,8 +25,8 @@ Follow these steps to set up the development environment and install the package
 
 1) Clone the repository
     ```
-    git clone <repository-url> 
-    cd <repository-name>
+    git clone https://github.com/microsoft/PromptWizard
+    cd PromptWizard
     ```
 2) Create and activate a virtual environment
 
