@@ -35,7 +35,7 @@
 
 <p align="center">
 <img src="./images/sequential_flowchart-1.png" width="49.5%" />
-  <p style="text-align: left; padding-left: 160px;">Process of sequential optimization of instruction and examples</p>
+  <p style="text-align: center;">Process of sequential optimization of instruction and examples</p>
 </p>
 
 ## Installation ⬇️
