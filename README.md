@@ -179,5 +179,6 @@ If you make use of our work, please cite our paper:
       url={https://arxiv.org/abs/2405.18369}, 
 }
 ```
-
+## Responsible AI Considerations 
+For guidelines and best practices related to Responsible AI, please refer to our [Responsible AI Guidelines](RESPONSIBLE_AI.md).
 
