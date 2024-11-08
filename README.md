@@ -14,10 +14,11 @@
 ### Main Algorithm
 <img src="./images/overview.png" >
 
-<div style="display: flex; justify-content:">
- <img src= "./images/iterative_flowchart-1.png" width="430">
- <img src="./images/sequential_flowchart-1.png" width="430">
-</div>
+
+<p align="center">
+  <img src="./images/iterative_flowchart-1.png" width="49.5%" />
+  <img src="./images/sequential_flowchart-1.png" width="49.5%" />
+</p>
 
 ## Installation ⬇️
 
@@ -143,10 +144,8 @@ Following are some of best pracitices we followed during are experiments
 
 ## Results 📈
 
-<div style="text-align:">
-<center>
+<div style="text-align: center;">
 <img src="./images/curve.png" width="342" height="242">
-</center>
 </div>
 
 - The fiqure shows the performance profile curve for the instruction induction
