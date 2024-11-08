@@ -150,14 +150,14 @@ Following are some of best pracitices we followed during are experiments
 
 
 - The fiqure shows the performance profile curve for the instruction induction
-tasks. The performance profile curve [(Dolan & Moré, 2002)](https://arxiv.org/abs/cs/0102001) visualizes how frequently
+tasks. The performance profile curve visualizes how frequently
 different approaches’ performance is within a given distance of the best performance. In this curve,
 the x-axis (τ) represents the performance ratio relative to the best-performing method, and the y-axis
 (p(τ )) reflects the fraction of tasks where a method’s performance is within this ratio. So for a given
 method, the curve tells what percentage of the tasks are within τ distance to the best performance. \
-PromptWizard consistently outperforms other methods across various
+**PromptWizard consistently outperforms other methods across various
 thresholds, maintaining the highest p(τ) values, indicating that it consistently performs near the best
-possible accuracy across all tasks.
+possible accuracy across all tasks.**
 
 ## How to contribute: ✋
 This project welcomes contributions and suggestions. Most contributions require you to agree to a Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us the rights to use your contribution. For details, visit https://cla.microsoft.com.
