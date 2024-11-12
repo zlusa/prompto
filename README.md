@@ -66,24 +66,32 @@ Follow these steps to set up the development environment and install the package
 
 ## Quickstart 🏃
 
-- We support [GSM8K](https://huggingface.co/datasets/openai/gsm8k), [SVAMP](https://huggingface.co/datasets/ChilleD/SVAMP), [AQUARAT](https://huggingface.co/datasets/deepmind/aqua_rat) and [Instruction_Induction(BBII)](https://github.com/xqlin98/INSTINCT/tree/main/Induction/experiments/data/instruction_induction/raw) datasets
+- We support [GSM8k](https://huggingface.co/datasets/openai/gsm8k), [SVAMP](https://huggingface.co/datasets/ChilleD/SVAMP), [AQUARAT](https://huggingface.co/datasets/deepmind/aqua_rat) and [Instruction_Induction(BBII)](https://github.com/xqlin98/INSTINCT/tree/main/Induction/experiments/data/instruction_induction/raw) datasets
 - Please note that time taken for prompt optimzation is dependent on the dataset. In our experiments for the above mentioned datasets, it took around 20 - 30 minutes on average.
-- To run on your custom dataset please jump [here](#run-on-custom-dataset) 
 
-#### Running on GSM8K (AQUARAT/SVAMP)
+#### High level overview of using PromptWizard
+- Load your dataset
+  - Follow steps mentioned [here](#create-custom-dataset)
+- Fix the configuration and environmental varibles for API calling
+  - Use ```promptopt_config.yaml``` to set configurations. For example for GSM8k this [file](demos/gsm8k/configs/promptopt_config.yaml) can be used
+  - Use ```.env``` to set environmental varibles. For GSM8k this [file](demos/gsm8k/.env) can be used
+  ```
+  AZURE_OPENAI_ENDPOINT="XXXXX" 
+  # Replace with your Azure OpenAI Endpoint
+
+  OPENAI_API_VERSION="XXXX"
+  # Replace with the version of your API
+
+  AZURE_OPENAI_CHAT_DEPLOYMENT_NAME="XXXXX"
+  # Create a deployment for the model and place the deployment name here. 
+  ```
+- Run the code
+  - To run PromptWizard on your custom dataset please jump [here](#run-on-custom-dataset) 
+
+#### Running on GSM8k (AQUARAT/SVAMP)
 
 - Please note that this code requires access to LLMs via API calling, we use AZURE endpoints for this
-- Set the AZURE endpoint configurations in [.env](demos/gsm8k/.env) as shown below
-```
-AZURE_OPENAI_ENDPOINT="XXXXX" 
-# Replace with your Azure OpenAI Endpoint
-
-OPENAI_API_VERSION="XXXX"
-# Replace with the version of your API
-
-AZURE_OPENAI_CHAT_DEPLOYMENT_NAME="XXXXX"
-# Create a deployment for the model and place the deployment name here. 
-```
+- Set the AZURE endpoint configurations in [.env](demos/gsm8k/.env)
 - Follow the steps in [demo.ipynb](demos/gsm8k/demo.ipynb) to download the data, run the prompt optimization and carry out inference.
 
 #### Running on BBII
@@ -114,12 +122,35 @@ NOTE : Refer to [demos](demos) folder for examples of folders for four datasets.
     - ```.env``` file for environment varibles to be used for API calling
     - ```.py/.ipynb``` script to run the code
 
-2) Hyperparameters like number of mutations, refine steps, in-context examples etc. can be changed in [promptopt_config.yaml](demos/gsm8k/configs/promptopt_config.yaml)
-    - Set the following : 
+2) Set the hyperparameters like number of mutations, refine steps, in-context examples etc.
+    - Set the following in [promptopt_config.yaml](demos/gsm8k/configs/promptopt_config.yaml) : 
         - ```task_description``` : Desciption of the task at hand which will be fed into the prompt
-        - ```base_instruction``` : Base intruction in line with the dataset
+          - For GSM8k a description like the following can be used
+            ```
+            You are a mathematics expert. You will be given a mathematics problem which you need to solve
+            ```
+        - ```base_instruction``` : Base instruction in line with the dataset
+          - A commonly used base instruction could be
+            ```
+            Lets think step by step.
+            ```
         - ```answer_format``` : Instruction for specifying the answer format
-    - It is crucial to set the ```answer_format``` properly to ensure correct extraction by ```def extract_final_answer()```
+          - It is crucial to set the ```answer_format``` properly to ensure correct extraction by ```def extract_final_answer()```
+          - Answer format could be :
+            ```
+            At the end, wrap only your final option between <ANS_START> and <ANS_END> tags
+            ```
+            Then in ```def extract_final_answer()``` we can simply write code to extract string between the tags
+          
+        - ```seen_set_size``` : The number of train samples to be used for prompt optimization
+          - In our experiments we set this to be 25. In general any number between 20-50 would work 
+        - ```few_shot_count``` : The number of in-context examples needed in the prompt
+          - The value can be set to any positive integer based on the requirement
+          - For generating zero-shot prompts, set the values to a small number (i.e between 2-5) and after the final prompt is generated the in-context examples can be removed. We suggest using some in-context examples as during the optimization process the instructions in the prompt are refined using in-context examples hence setting it to a small number will give better zero-shot instructions in the prompt
+        - ```generate_reasoning``` : Whether or not to generate reasoning for the in-context examples
+          - In our experiments we found it to improve the prompt overall as it provides a step-by-step approach to reach the final answer. However if there is a constraint on the prompt length or number of prompt tokens, it can be turned off to get smaller sized prompts
+        - ```generate_expert_identity``` and ```generate_intent_keywords``` : Having these helped improve the prompt
+    - ```use_synthetic_examples``` is a global hyperparameter which can be used to set the type of in-context examples in the final prompt, i.e. it can be synthetic examples or examples from train data or mixture of both
     - Refer ```promptopt_config.yaml``` files in folders present [here](demos)  for the descriptions used for AQUARAT, SVAMP and GSM8k. For BBII refer [description.py](demos/bbh/description.py) which has the meta instructions for each of the datasets
 3) Create a dataset specific class which inherits ```class DatasetSpecificProcessing``` similar to ```GSM8k(DatasetSpecificProcessing)``` in [demo.ipynb](demos/gsm8k/demo.ipynb) and define the following functions in it
       1) In ```def extract_answer_from_output()``` : This is a dataset specific function, given the ```answer``` from the dataset it should extract and return  a consize form of the answer. Note that based on the dataset it can also simply return the ```answer``` as it is like in case of SVAMP and AQUARAT datasets
@@ -129,10 +160,7 @@ NOTE : Refer to [demos](demos) folder for examples of folders for four datasets.
          - Evaluates the extracted answer with the ground truth and retuns
             - Extracted answer from LLM output
             - Boolean value indicating if answer is correct or not
-         - The evaluation done here is dataset specific, for datasets like GSM8K, SVAMP and AQUARAT which are there final answer as an number we can do a direct match between the numbers generated and the ground truth, while for datasets where the answer is a sentence or paragraph it would be better to do evaluation with llm-as-a-judge, to compare the generated and ground truth paragraph/sentence. An example is available in ```def access_answer()``` in [this](demos/bbh/demo.ipynb) notebook
-4) ```use_synthetic_examples``` can be used to set the type of in-context examples in the final prompt, i.e. it can be synthetic examples or examples from train data
-
-
+         - The evaluation done here is dataset specific, for datasets like GSM8k, SVAMP and AQUARAT which are there final answer as an number we can do a direct match between the numbers generated and the ground truth, while for datasets where the answer is a sentence or paragraph it would be better to do evaluation with llm-as-a-judge, to compare the generated and ground truth paragraph/sentence. An example is available in ```def access_answer()``` in [this](demos/bbh/demo.ipynb) notebook
 
 ## Configurations ⚙️ 
 
