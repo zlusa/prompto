@@ -105,7 +105,7 @@ Follow these steps to set up the development environment and install the package
 ### Create Custom Dataset
 - Our code expects the dataset to be in ```.jsonl``` file format
 - Both the train and test set follow the same format
-- Every sample in the ```.jsonl``` should have 3 fields :
+- Every sample in the ```.jsonl``` should have 2 fields :
   1) ```question``` : It should contain the complete question that is to asked to the LLM
   2) ```answer``` : It should contain the ground truth answer which can be verbose or consize
 
