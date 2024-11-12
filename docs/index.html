@@ -173,6 +173,69 @@
         .next {
             right: 10px;
         }
+
+        * {box-sizing: border-box;}
+        body {font-family: Verdana, sans-serif;}
+        .mySlides {display: none;}
+        img {vertical-align: middle;}
+
+        /* Slideshow container */
+        .slideshow-container {
+          max-width: 1000px;
+          position: relative;
+          margin: auto;
+        }
+
+        /* Caption text */
+        .text {
+          color: #f2f2f2;
+          font-size: 15px;
+          padding: 8px 12px;
+          position: absolute;
+          bottom: 8px;
+          width: 100%;
+          text-align: center;
+        }
+
+        /* Number text (1/3 etc) */
+        .numbertext {
+          color: #f2f2f2;
+          font-size: 12px;
+          padding: 8px 12px;
+          position: absolute;
+          top: 0;
+        }
+
+        /* The dots/bullets/indicators */
+        .dot {
+          height: 15px;
+          width: 15px;
+          margin: 0 2px;
+          background-color: #bbb;
+          border-radius: 50%;
+          display: inline-block;
+          transition: background-color 0.6s ease;
+        }
+
+        .active {
+          background-color: #717171;
+        }
+
+        /* Fading animation */
+        .fade {
+          animation-name: fade;
+          animation-duration: 1.5s;
+        }
+
+        @keyframes fade {
+          from {opacity: .4} 
+          to {opacity: 1}
+        }
+
+        /* On smaller screens, decrease text size */
+        @media only screen and (max-width: 300px) {
+          .text {font-size: 11px}
+        }
        
     
 </style>
@@ -250,43 +313,62 @@
   </div>
 </section>
 
-<div class="slider-container">
-  <div class="slider-wrapper">
-      <div class="box">
-          <img src="images/overview.png" alt="Image 1">
-      </div>
-      <div class="box">
-          <img src="images/iterative_flowchart-1.png" alt="Image 2">
-      </div>
-      <div class="box">
-          <img src="images/sequential_flowchart-1.png" alt="Image 3">
-      </div>
+<div class="slideshow-container">
+
+  <div class="mySlides fade">
+    <div class="numbertext">1 / 3</div>
+    <p align="center">
+    <img src="images/overview.png">
+    </p>
   </div>
-  <!-- Navigation buttons -->
-  <button class="prev" onclick="moveSlide(-1)">&#10094;</button>
-  <button class="next" onclick="moveSlide(1)">&#10095;</button>
-</div>
-
-<script>
-  let currentIndex = 0;
-
-  function moveSlide(direction) {
-      const slides = document.querySelectorAll('.box');
-      const totalSlides = slides.length;
-      currentIndex += direction;
-
-      // Loop back to first/last slide if at the end
-      if (currentIndex < 0) {
-          currentIndex = totalSlides - 1;
-      } else if (currentIndex >= totalSlides) {
-          currentIndex = 0;
-      }
-
-      // Move the slider to the correct position
-      const sliderWrapper = document.querySelector('.slider-wrapper');
-      sliderWrapper.style.transform = `translateX(-${currentIndex * 100}%)`;
+  
+  <div class="mySlides fade">
+    <div class="numbertext">2 / 3</div>
+    <p align="center">
+    <img width="700" height="700" src="images/iterative_flowchart-1.png">
+    </p>
+  </div>
+  
+  <div class="mySlides fade">
+    <div class="numbertext">3 / 3</div>
+    <p align="center">
+    <img width="700" height="700" src="images/sequential_flowchart-1.png">
+    </p>
+  </p>
+  </div>
+  
+  </div>
+  <br>
+  
+  <div style="text-align:center">
+    <span class="dot"></span> 
+    <span class="dot"></span> 
+    <span class="dot"></span> 
+  </div>
+  
+  <script>
+  let slideIndex = 0;
+  showSlides();
+  
+  function showSlides() {
+    let i;
+    let slides = document.getElementsByClassName("mySlides");
+    let dots = document.getElementsByClassName("dot");
+    for (i = 0; i < slides.length; i++) {
+      slides[i].style.display = "none";  
+    }
+    slideIndex++;
+    if (slideIndex > slides.length) {slideIndex = 1}    
+    for (i = 0; i < dots.length; i++) {
+      dots[i].className = dots[i].className.replace(" active", "");
+    }
+    slides[slideIndex-1].style.display = "block";  
+    dots[slideIndex-1].className += " active";
+    setTimeout(showSlides, 2000); // Change image every 2 seconds
   }
-</script>
+  </script>
+
+
 
 <section class="section">
   <div class="container is-max-desktop">
@@ -306,12 +388,47 @@
       <div class="column is-four-fifths">
         <h2 class="title is-3">Overview</h2>
         <div class="content has-text-justified">
-          Large language models (LLMs) like GPT-4 have achieved remarkable performance across diverse tasks. At the core of this success is prompting—the process of providing input instructions to guide models toward desired outputs. Studies have shown that prompting significantly influences LLM performance, making prompt engineering—the design and refinement of prompts—critical for maximizing accuracy. However, crafting effective prompts remains a labor-intensive and domain-specific task, requiring human expertise and subjective judgment. As models evolve and tasks vary, the need to repeatedly design prompts raises an important question: <br> <b>Can prompt engineering be automated to streamline this process and enhance scalability?</b>
+          Large language models (LLMs) like GPT-4 have achieved remarkable performance across diverse tasks. At the core of this success is prompting—the process of providing input instructions to guide models toward desired outputs. Studies have shown that prompting significantly influences LLM performance, making prompt engineering—the design and refinement of prompts—critical for maximizing accuracy. However, crafting effective prompts remains a labor-intensive and domain-specific task, requiring human expertise and subjective judgment. As models evolve and tasks vary, the need to repeatedly design prompts raises an important question:
         </div>
       </div>
     </div>
 
 </section>
+
+
+<section class="section">
+  <div class="container is-max-desktop">
+    <!-- Motivation. -->
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">Motivation</h2>
+        <div class="content has-text-justified">
+
+          <h3>Prompting is central to LLMs!</h3>
+          <ul>
+            <li><b>Prompting</b>: The process of providing input instructions to guide models towards desired output</li>
+            <li><b>Prompt Engineering</b>: The process of designing and refining of prompts​</li>
+            <li>Crating effective prompts is a challenge as:​</li>
+            <ol>
+              <li>The task is labor-intensive</li>
+              <li>Prompts need to be domain-specific to work effectively</li>
+              <li>Often it equires human expertise and is subjective​</li>
+              <li>Also as models and tasks evolve, there is a need for repeated design</li>
+            </ol>
+          </ul>
+          
+        </div>
+      </div>
+    </div>
+    <!--/ Motivation. -->
+
+</section>
+
+
+
+
+
+
 
 <section class="section">
   <div class="container is-max-desktop">
