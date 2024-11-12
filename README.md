@@ -105,7 +105,7 @@ Follow these steps to set up the development environment and install the package
 ### Create Custom Dataset
 - Our code expects the dataset to be in ```.jsonl``` file format
 - Both the train and test set follow the same format
-- Every sample in the ```.jsonl``` should have 2 fields :
+- Every sample in the ```.jsonl``` should have 3 fields :
   1) ```question``` : It should contain the complete question that is to asked to the LLM
   2) ```answer``` : It should contain the ground truth answer which can be verbose or consize
 
@@ -161,6 +161,16 @@ NOTE : Refer to [demos](demos) folder for examples of folders for four datasets.
             - Extracted answer from LLM output
             - Boolean value indicating if answer is correct or not
          - The evaluation done here is dataset specific, for datasets like GSM8k, SVAMP and AQUARAT which are there final answer as an number we can do a direct match between the numbers generated and the ground truth, while for datasets where the answer is a sentence or paragraph it would be better to do evaluation with llm-as-a-judge, to compare the generated and ground truth paragraph/sentence. An example is available in ```def access_answer()``` in [this](demos/bbh/demo.ipynb) notebook
+
+## How PromptWizard Works 🔍
+- Using the problem description and initial prompt instruction, PW generates variations of the instruction by prompting LLMs to mutate it. Based on performance, the best prompt is selected. PW incorporates a critique component that provides feedback, thus guiding and refining the prompt over multiple iterations. 
+- PW also optimizes in-context examples. PW selects a diverse set of examples
+from the training data, identifying positive and negative examples based on their performance with
+the modified prompt. Negative examples help inform further prompt refinements. 
+- Examples and instructions are sequentially optimized, using the critique to generate synthetic examples that address the current prompt’s weaknesses. These examples are integrated to further refine the prompt. 
+- PW generates detailed reasoning chains via Chain-of-Thought (CoT), enriching the prompt’s capacity for problem-solving. 
+- PW aligns prompts with human reasoning by integrating task intent and expert
+personas, enhancing both model performance and interpretability.
 
 ## Configurations ⚙️ 
 
