@@ -26,7 +26,7 @@ INSTALL_REQUIRES = [
     "datasets",
     "tiktoken",
     "nltk",
-    "openai~=1.12.0",
+    "openai",
     "pyyaml~=6.0.1",
     "pyarrow==15.0.2",
     "llama-index==0.11.10",
