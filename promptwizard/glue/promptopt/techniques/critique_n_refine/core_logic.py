@@ -86,7 +86,7 @@ class CritiqueNRefine(PromptOptimizer, UniversalBaseClass):
                 prompt_instruction=base_instruction)
             generated_mutated_prompt = self.chat_completion(mutated_sample_prompt)
             # Find all matches of the pattern in the text
-            matches = re.findall(DatasetSpecificProcessing.TEXT_DELIMITER_PATTERN, generated_mutated_prompt)
+            matches = re.findall(DatasetSpecificProcessing.TEXT_DELIMITER_PATTERN_MUTATION, generated_mutated_prompt)
             candidate_prompts.extend(matches)
 
             self.logger.info(f"mutation_round={mutation_round} mutated_sample_prompt={mutated_sample_prompt}"
@@ -127,7 +127,7 @@ class CritiqueNRefine(PromptOptimizer, UniversalBaseClass):
                                                                                   steps_per_sample=1)
 
         refined_prompts = self.chat_completion(critique_refine_prompt, self.prompt_pool.expert_profile)
-
+        
         refined_prompts = re.findall(DatasetSpecificProcessing.TEXT_DELIMITER_PATTERN, refined_prompts)[0]
 
         self.logger.info(f"Prompt to get critique:\n {meta_critique_prompt}"
@@ -348,7 +348,7 @@ class CritiqueNRefine(PromptOptimizer, UniversalBaseClass):
                    examples=example_string,
                    task_description=params.task_description,
                    num_examples=params.few_shot_count)
-
+        
         critique = self.chat_completion(few_shot_critique_prompt, self.prompt_pool.expert_profile)
 
         gt_eg = random.sample(self.dataset, 1)
@@ -363,6 +363,31 @@ class CritiqueNRefine(PromptOptimizer, UniversalBaseClass):
         synthetic_examples = self.chat_completion(few_shot_opt_prompt, self.prompt_pool.expert_profile)
         synthetic_examples = self.extract_examples_frm_response(synthetic_examples)
 
+        return synthetic_examples
+
+    def generate_best_examples_zero_shot(self,params: PromptOptimizationParams) -> List:
+        """
+        Generate best example to be give as few-shots for the given task.
+
+        :param params: Object having hyperparameters for this prompt optimization technique.
+        :return: List of synthetic examples
+        """
+        few_shot_critique_prompt = self.prompt_pool.examples_critique_template_zero_shot.\
+            format(prompt=params.base_instruction,
+                   task_description=params.task_description,
+                   num_examples=params.few_shot_count)
+        
+        critique = self.chat_completion(few_shot_critique_prompt, self.prompt_pool.expert_profile)
+
+        few_shot_opt_prompt = self.prompt_pool.examples_optimization_template.\
+            format(prompt=params.base_instruction,
+                   examples="",
+                   gt_example="",
+                   critique=critique,
+                   task_description=params.task_description,
+                   num_examples=params.few_shot_count)
+        synthetic_examples = self.chat_completion(few_shot_opt_prompt, self.prompt_pool.expert_profile)
+        synthetic_examples = self.extract_examples_frm_response(synthetic_examples)
         return synthetic_examples
 
     @iolog.append_to_chained_log
@@ -381,7 +406,7 @@ class CritiqueNRefine(PromptOptimizer, UniversalBaseClass):
 
         return refined_instructions[0] if refined_instructions else None
 
-    def get_best_prompt(self, params: PromptOptimizationParams,use_synthetic_examples=False) -> (str, Any):
+    def get_best_prompt(self, params: PromptOptimizationParams,use_synthetic_examples=False,run_without_train_examples=False,use_only_synthetic_examples=False) -> (str, Any):
         """
         Perform `params.max_iterations` iterations for optimizing your prompt. And return the best prompt found so far.
 
@@ -391,60 +416,79 @@ class CritiqueNRefine(PromptOptimizer, UniversalBaseClass):
 
         current_base_instruction = params.base_instruction
 
-        # Mutate and refine task description
-        for round_num in tqdm(range(1, params.mutate_refine_iterations+1), desc="Iterations completed: "):
-            self.logger.info(f"{CommonLogsStr.LOG_SEPERATOR} + Starting iteration: {round_num} \n "
-                             f"current_base_instruction: {current_base_instruction}")
-            candidate_prompts = self.gen_different_styles(current_base_instruction,
-                                                          params.task_description,
-                                                          params.mutation_rounds,
-                                                          params.style_variation)
-            prompt_score_list = self.get_prompt_score(candidate_prompts, params)
-            prompt_score_list = self.select_top_prompts(prompt_score_list, params.top_n)
+        if not use_only_synthetic_examples:
+            print("\nMutating and Refining Task Description....")
+            # Mutate and refine task description
+            for round_num in tqdm(range(1, params.mutate_refine_iterations+1), desc="Iterations completed: "):
+                self.logger.info(f"{CommonLogsStr.LOG_SEPERATOR} + Starting iteration: {round_num} \n "
+                                f"current_base_instruction: {current_base_instruction}")
+                candidate_prompts = self.gen_different_styles(current_base_instruction,
+                                                            params.task_description,
+                                                            params.mutation_rounds,
+                                                            params.style_variation)
+                
+                if run_without_train_examples:
+                    print("\nOptimization Finished...")
+                    print("\nPossible prompt variations:")
+                    for candidate in candidate_prompts:
+                        print(">",candidate)
+                    exit()
+                prompt_score_list = self.get_prompt_score(candidate_prompts, params)
+                prompt_score_list = self.select_top_prompts(prompt_score_list, params.top_n)
 
-            if params.refine_instruction:
-                refined_prompts = self.refine_prompts(prompt_score_list, params)
-                refined_prompt_score_list = self.get_prompt_score(refined_prompts, params)
-                prompt_score_list = self.select_top_prompts(refined_prompt_score_list + prompt_score_list,
-                                                            params.top_n)
+                if params.refine_instruction:
+                    refined_prompts = self.refine_prompts(prompt_score_list, params)
+                    refined_prompt_score_list = self.get_prompt_score(refined_prompts, params)
+                    prompt_score_list = self.select_top_prompts(refined_prompt_score_list + prompt_score_list,
+                                                                params.top_n)
 
-            current_base_instruction = prompt_score_list[0][self.GetPromptScoreIndex.PROMPT_STR]
-            self.iolog.append_dict_to_chained_logs({"round_num": round_num,
-                                                    "best_prompt": current_base_instruction,
-                                                    "score": prompt_score_list[0][self.GetPromptScoreIndex.SCORE]
-                                                    })
+                current_base_instruction = prompt_score_list[0][self.GetPromptScoreIndex.PROMPT_STR]
+                self.iolog.append_dict_to_chained_logs({"round_num": round_num,
+                                                        "best_prompt": current_base_instruction,
+                                                        "score": prompt_score_list[0][self.GetPromptScoreIndex.SCORE]
+                                                        })
 
-        examples = []
+            examples = []
 
-        params.base_instruction = current_base_instruction
-        for example in self.dataset:
-            solve_prompt = self.prompt_pool.solve_template.format(
-                questions_batch_size=1,
-                instruction=params.base_instruction,
-                answer_format=params.answer_format,
-                questions=example[DatasetSpecificProcessing.QUESTION_LITERAL])
-            generated_text = self.chat_completion(solve_prompt)
+            params.base_instruction = current_base_instruction
+            for example in self.dataset:
+                solve_prompt = self.prompt_pool.solve_template.format(
+                    questions_batch_size=1,
+                    instruction=params.base_instruction,
+                    answer_format=params.answer_format,
+                    questions=example[DatasetSpecificProcessing.QUESTION_LITERAL])
+                generated_text = self.chat_completion(solve_prompt)
 
-            examples.extend(self.evaluate(generated_text, [example]))
-            if len(examples) >= params.few_shot_count:
-                break
+                examples.extend(self.evaluate(generated_text, [example]))
+                if len(examples) >= params.few_shot_count:
+                    break
 
-        if len(examples) < params.few_shot_count:
-            examples = random.sample(self.dataset, params.few_shot_count - len(examples))
+            if len(examples) < params.few_shot_count:
+                examples = random.sample(self.dataset, params.few_shot_count - len(examples))
 
-        # Refine task description and examples iteratively
-        for i in range(params.refine_task_eg_iterations):
-            refine_task_desc = random.choice([True, False])
-            if refine_task_desc:
+            # Refine task description and examples iteratively
+            print("\nRefining Task description and Examples iteratively....")
+            for i in tqdm(range(params.refine_task_eg_iterations)):
+                refine_task_desc = random.choice([True, False])
+                if refine_task_desc:
+                    refined_instruction = self.get_best_instr_by_critique(examples, params)
+                    if refined_instruction:
+                        params.base_instruction = refined_instruction
+                # comment this to turn off synthetic examples
+                elif use_synthetic_examples:
+                        examples = self.generate_best_examples(examples, params)
+        else:
+            examples = []
+            print("\nRefining Task Description and Examples iteratively...")
+            for i in tqdm(range(params.refine_task_eg_iterations)):
+                examples = self.generate_best_examples_zero_shot(params)
                 refined_instruction = self.get_best_instr_by_critique(examples, params)
-                if refined_instruction:
-                    params.base_instruction = refined_instruction
-            # comment this to turn off synthetic examples
-            elif use_synthetic_examples:
-                    examples = self.generate_best_examples(examples, params)
+                params.base_instruction = refined_instruction
+    
 
         if params.generate_reasoning:
-            for example in examples:
+            print("\nGenerating CoT Reasoning for In-Context Examples....")
+            for example in tqdm(examples):
                 reason = self.generate_reasoning(params.task_description,
                                                  params.base_instruction,
                                                  example[DatasetSpecificProcessing.QUESTION_LITERAL],
@@ -464,10 +508,12 @@ class CritiqueNRefine(PromptOptimizer, UniversalBaseClass):
 
         expert_identity = self.prompt_pool.system_prompt
         if params.generate_expert_identity:
+            print("\nGenerating Expert Identity....")
             expert_identity = self.generate_expert_identity(params.task_description)
             self.logger.info(f"Expert Identity: {expert_identity}")
 
         if params.generate_intent_keywords:
+            print("\nGenerating Intent Keywords....")
             intent_keywords = self.generate_intent_keywords(params.task_description,
                                                             params.base_instruction)
 

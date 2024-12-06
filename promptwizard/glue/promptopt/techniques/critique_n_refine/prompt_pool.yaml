@@ -156,6 +156,15 @@ examples_critique_template: |
   Think of analysing, understanding and creating examples of task on the criteria of diversity of types of examples, complexity of the nature/characteristics of the examples and relevance/compatibility to the whole example set in total.
   Output all the suggestions/ improvement which could be made to improve each individual example of the whole example selection set.
 
+examples_critique_template_zero_shot: |
+  You are an expert example selector who can help in selection of right in-context examples to help the most suitable agent solve this problem.
+  You are also given the prompt instruction which is used to solve this task
+  [Prompt]: {prompt}
+  You are given the task description of the task:
+  [Task Description]: {task_description}
+  I'm trying to write a few shots prompt using {num_examples} in-context examples to effectively solve any questions of the above task.
+  Think of analysing, understanding and creating examples of task on the criteria of diversity of types of examples, complexity of the nature/characteristics of the examples and relevance/compatibility to the whole example set in total.
+  Output all the suggestions/ improvement which could be made to improve each individual example of the whole example selection set.
 
 examples_optimization_template: |
   You are an expert example selector who can help in selection of right in-context examples to help the agent solve this problem.

@@ -23,6 +23,7 @@ class CritiqueNRefinePromptPool(PromptPool):
     expert_template: str
     generate_reason_template: str
     reason_optimization_template: str
+    examples_critique_template_zero_shot: str
 
 
 @dataclass

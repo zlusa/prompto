@@ -100,7 +100,7 @@ class GluePromptOpt:
         self.prompt_opt = prompt_opt_cls(training_dataset, base_path, self.setup_config,
                                          self.prompt_pool, self.data_processor, self.logger)
 
-    def get_best_prompt(self,use_synthetic_examples=False) -> (str, Any):
+    def get_best_prompt(self,use_synthetic_examples=False,run_without_train_examples=False,use_only_synthetic_examples=False) -> (str, Any):
         """
         Call get_best_prompt() method of class PromptOptimizer & return its value.
         :return: (best_prompt, expert_profile)
@@ -109,7 +109,7 @@ class GluePromptOpt:
             identity of described in expert_profile.
         """
         start_time = time.time()
-        self.BEST_PROMPT, self.EXPERT_PROFILE = self.prompt_opt.get_best_prompt(self.prompt_opt_param,use_synthetic_examples=use_synthetic_examples)
+        self.BEST_PROMPT, self.EXPERT_PROFILE = self.prompt_opt.get_best_prompt(self.prompt_opt_param,use_synthetic_examples=use_synthetic_examples,run_without_train_examples=run_without_train_examples,use_only_synthetic_examples=use_only_synthetic_examples)
 
         self.logger.info(f"Time taken to find best prompt: {(time.time() - start_time)} sec")
         return self.BEST_PROMPT, self.EXPERT_PROFILE
