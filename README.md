@@ -150,9 +150,6 @@ NOTE : Refer to [demos](demos) folder for examples of folders for four datasets.
         - ```generate_reasoning``` : Whether or not to generate reasoning for the in-context examples
           - In our experiments we found it to improve the prompt overall as it provides a step-by-step approach to reach the final answer. However if there is a constraint on the prompt length or number of prompt tokens, it can be turned off to get smaller sized prompts
         - ```generate_expert_identity``` and ```generate_intent_keywords``` : Having these helped improve the prompt as they help making the prompt relevant to the task
-    - ```use_synthetic_examples``` is a global hyperparameter which can be used to set the type of in-context examples in the final prompt, i.e. it can be synthetic examples or examples from train data or mixture of both
-    - ```use_only_synthetic_examples``` is a global hyperparameter which can be used when there are no training samples but in-context examples are required in the final prompt 
-    - ```run_without_train_examples``` is a global hyperparameter which can be used when there are no training samples and in-context examples are not required in the final prompt 
     - Refer ```promptopt_config.yaml``` files in folders present [here](demos)  for the descriptions used for AQUARAT, SVAMP and GSM8k. For BBII refer [description.py](demos/bbh/description.py) which has the meta instructions for each of the datasets
 3) Create a dataset specific class which inherits ```class DatasetSpecificProcessing``` similar to ```GSM8k(DatasetSpecificProcessing)``` in [demo.ipynb](demos/gsm8k/demo.ipynb) and define the following functions in it
       1) In ```def extract_answer_from_output()``` : This is a dataset specific function, given the ```answer``` from the dataset it should extract and return  a consize form of the answer. Note that based on the dataset it can also simply return the ```answer``` as it is like in case of SVAMP and AQUARAT datasets
@@ -163,6 +160,29 @@ NOTE : Refer to [demos](demos) folder for examples of folders for four datasets.
             - Extracted answer from LLM output
             - Boolean value indicating if answer is correct or not
          - The evaluation done here is dataset specific, for datasets like GSM8k, SVAMP and AQUARAT which are there final answer as an number we can do a direct match between the numbers generated and the ground truth, while for datasets where the answer is a sentence or paragraph it would be better to do evaluation with llm-as-a-judge, to compare the generated and ground truth paragraph/sentence. An example is available in ```def access_answer()``` in [this](demos/bbh/demo.ipynb) notebook
+4) Following are the global parameters which can be set based on th availability of the training data
+      - ```use_synthetic_examples``` is a global hyperparameter which can be used to set the type of in-context examples in the final prompt, i.e. it can be synthetic examples or examples from train data or mixture of both
+      - ```use_only_synthetic_examples``` is a global hyperparameter which can be used when there are no training samples but in-context examples are required in the final prompt 
+      - ```run_without_train_examples``` is a global hyperparameter which can be used when there are no training samples and in-context examples are not required in the final prompt 
+      - Scenario based of usage is given below, refer the notebooks in [demos](demos) for the cells to be replaced with the below:
+        - If there is no training data and in-context examples are not required in final prompt, then run
+        ```
+        best_prompt, expert_profile = gp.get_best_prompt(use_synthetic_examples=False,
+                                                        run_without_train_examples=True,
+                                                        use_only_synthetic_examples=False)
+        ```
+        - If there is no training data and synthetic in-context examples are required in final prompt, then run
+        ```
+        best_prompt, expert_profile = gp.get_best_prompt(use_synthetic_examples=False,
+                                                        run_without_train_examples=False,
+                                                        use_only_synthetic_examples=True)
+        ```
+        - If there is training data, then run
+        ```
+        best_prompt, expert_profile = gp.get_best_prompt(use_synthetic_examples=True,
+                                                        run_without_train_examples=False,
+                                                        use_only_synthetic_examples=False)
+        ```
 
 ## How PromptWizard Works 🔍
 - Using the problem description and initial prompt instruction, PW generates variations of the instruction by prompting LLMs to mutate it. Based on performance, the best prompt is selected. PW incorporates a critique component that provides feedback, thus guiding and refining the prompt over multiple iterations. 
