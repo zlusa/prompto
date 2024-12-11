@@ -428,11 +428,27 @@ class CritiqueNRefine(PromptOptimizer, UniversalBaseClass):
                                                             params.style_variation)
                 
                 if run_without_train_examples:
+                    prompt_index = 1
                     print("\nOptimization Finished...")
                     print("\nPossible prompt variations:")
                     for candidate in candidate_prompts:
-                        print(">",candidate)
-                    exit()
+                        final_best_prompt = self.prompt_pool.final_prompt.format(
+                        instruction=candidate,
+                        answer_format=params.answer_format,
+                        few_shot_examples="")
+                        expert_identity = self.prompt_pool.system_prompt
+                        if params.generate_expert_identity:
+                            expert_identity = self.generate_expert_identity(params.task_description)
+
+                        #if params.generate_intent_keywords:
+                        intent_keywords = self.generate_intent_keywords(params.task_description,
+                                                                            params.base_instruction)
+
+                        final_best_prompt += "Keywords: " + intent_keywords
+                        print("_______________________________________________________________________")
+                        print("\nVariations "+str(prompt_index)+":\nExpert Profile:\n"+expert_identity+":\nPrompt:\n"+final_best_prompt)
+                        prompt_index += 1
+                    return "",""
                 prompt_score_list = self.get_prompt_score(candidate_prompts, params)
                 prompt_score_list = self.select_top_prompts(prompt_score_list, params.top_n)
 
@@ -501,10 +517,16 @@ class CritiqueNRefine(PromptOptimizer, UniversalBaseClass):
 
         example_string = self.data_processor.collate_to_str(examples, self.prompt_pool.quest_reason_ans)
 
-        final_best_prompt = self.prompt_pool.final_prompt.format(
+        if params.few_shot_count == 0:
+            final_best_prompt = self.prompt_pool.final_prompt.format(
             instruction=params.base_instruction,
             answer_format=params.answer_format,
-            few_shot_examples=example_string)
+            few_shot_examples="")
+        else:
+            final_best_prompt = self.prompt_pool.final_prompt.format(
+                instruction=params.base_instruction,
+                answer_format=params.answer_format,
+                few_shot_examples=example_string)
 
         expert_identity = self.prompt_pool.system_prompt
         if params.generate_expert_identity:

@@ -164,7 +164,7 @@ NOTE : Refer to [demos](demos) folder for examples of folders for four datasets.
       - ```use_synthetic_examples``` is a global hyperparameter which can be used to set the type of in-context examples in the final prompt, i.e. it can be synthetic examples or examples from train data or mixture of both
       - ```use_only_synthetic_examples``` is a global hyperparameter which can be used when there are no training samples but in-context examples are required in the final prompt 
       - ```run_without_train_examples``` is a global hyperparameter which can be used when there are no training samples and in-context examples are not required in the final prompt 
-      - Scenario based of usage is given below, refer the notebooks in [demos](demos) for the cells to be replaced with the below:
+      - Scenario based of usage is given below, refer this [notebook](demos/dataset_scenarios_demo.ipynb) for the cells to be replaced with the below:
         - If there is no training data and in-context examples are not required in final prompt, then run
         ```
         best_prompt, expert_profile = gp.get_best_prompt(use_synthetic_examples=False,
