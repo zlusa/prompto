@@ -101,7 +101,7 @@ Follow these steps to set up the development environment and install the package
 - A demo is presented in  [demo.ipynb](demos/bbh/demo.ipynb)
 
 
-## PromptWizard usage based on data availability
+## PromptWizard usage based on data availability 💻
 
 Following are the global parameters which can be set based on the availability of the training data
 
@@ -187,7 +187,7 @@ NOTE : Refer to [demos](demos) folder for examples of folders for four datasets.
          - Evaluates the extracted answer with the ground truth and retuns
             - Extracted answer from LLM output
             - Boolean value indicating if answer is correct or not
-         - The evaluation done here is dataset specific, for datasets like GSM8k, SVAMP and AQUARAT which are there final answer as an number we can do a direct match between the numbers generated and the ground truth, while for datasets where the answer is a sentence or paragraph it would be better to do evaluation with llm-as-a-judge, to compare the generated and ground truth paragraph/sentence. An example is available in ```def access_answer()``` in [this](demos/bbh/demo.ipynb) notebook
+         - The evaluation done here is dataset specific, for datasets like GSM8k, SVAMP and AQUARAT which have final answer as an number, we can do a direct match between the numbers generated and the ground truth, while for datasets where the answer is a sentence or paragraph it would be better to do evaluation with llm-as-a-judge, to compare the generated and ground truth paragraph/sentence. An example is available in ```def access_answer()``` in [this](demos/bbh/demo.ipynb) notebook
 
 
 ## How PromptWizard Works 🔍
