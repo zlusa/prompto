@@ -100,6 +100,34 @@ Follow these steps to set up the development environment and install the package
 - In configs ```task_description```,```base_instruction``` and ```answer_format``` need to be changed for different datasets in BBII, the rest of the configs remain the same
 - A demo is presented in  [demo.ipynb](demos/bbh/demo.ipynb)
 
+
+## PromptWizard usage based on data availability
+
+Following are the global parameters which can be set based on the availability of the training data
+
+  - ```run_without_train_examples``` is a global hyperparameter which can be used when there are no training samples and in-context examples are not required in the final prompt 
+  - ```use_only_synthetic_examples``` is a global hyperparameter which can be used when there are no training samples but in-context examples are required in the final prompt 
+  - ```use_synthetic_examples``` is a global hyperparameter which can be used to set the type of in-context examples in the final prompt, i.e. it can be synthetic examples or examples from train data or mixture of both. In the next section we provide further details for this scenario
+  - Scenario based of usage is given below, refer this [notebook](demos/dataset_scenarios_demo.ipynb) for the cells to be replaced with the below:
+    - If there is no training data and in-context examples are not required in final prompt, then run
+    ```
+    best_prompt, expert_profile = gp.get_best_prompt(use_synthetic_examples=False,
+                                                    run_without_train_examples=True,
+                                                    use_only_synthetic_examples=False)
+    ```
+    - If there is no training data and synthetic in-context examples are required in final prompt, then run
+    ```
+    best_prompt, expert_profile = gp.get_best_prompt(use_synthetic_examples=False,
+                                                    run_without_train_examples=False,
+                                                    use_only_synthetic_examples=True)
+    ```
+    - If there is training data, then run
+    ```
+    best_prompt, expert_profile = gp.get_best_prompt(use_synthetic_examples=True,
+                                                    run_without_train_examples=False,
+                                                    use_only_synthetic_examples=False)
+    ```
+
 ## Run on Custom Datasets 🗃️
 
 ### Create Custom Dataset
@@ -160,29 +188,7 @@ NOTE : Refer to [demos](demos) folder for examples of folders for four datasets.
             - Extracted answer from LLM output
             - Boolean value indicating if answer is correct or not
          - The evaluation done here is dataset specific, for datasets like GSM8k, SVAMP and AQUARAT which are there final answer as an number we can do a direct match between the numbers generated and the ground truth, while for datasets where the answer is a sentence or paragraph it would be better to do evaluation with llm-as-a-judge, to compare the generated and ground truth paragraph/sentence. An example is available in ```def access_answer()``` in [this](demos/bbh/demo.ipynb) notebook
-4) Following are the global parameters which can be set based on th availability of the training data
-      - ```use_synthetic_examples``` is a global hyperparameter which can be used to set the type of in-context examples in the final prompt, i.e. it can be synthetic examples or examples from train data or mixture of both
-      - ```use_only_synthetic_examples``` is a global hyperparameter which can be used when there are no training samples but in-context examples are required in the final prompt 
-      - ```run_without_train_examples``` is a global hyperparameter which can be used when there are no training samples and in-context examples are not required in the final prompt 
-      - Scenario based of usage is given below, refer this [notebook](demos/dataset_scenarios_demo.ipynb) for the cells to be replaced with the below:
-        - If there is no training data and in-context examples are not required in final prompt, then run
-        ```
-        best_prompt, expert_profile = gp.get_best_prompt(use_synthetic_examples=False,
-                                                        run_without_train_examples=True,
-                                                        use_only_synthetic_examples=False)
-        ```
-        - If there is no training data and synthetic in-context examples are required in final prompt, then run
-        ```
-        best_prompt, expert_profile = gp.get_best_prompt(use_synthetic_examples=False,
-                                                        run_without_train_examples=False,
-                                                        use_only_synthetic_examples=True)
-        ```
-        - If there is training data, then run
-        ```
-        best_prompt, expert_profile = gp.get_best_prompt(use_synthetic_examples=True,
-                                                        run_without_train_examples=False,
-                                                        use_only_synthetic_examples=False)
-        ```
+
 
 ## How PromptWizard Works 🔍
 - Using the problem description and initial prompt instruction, PW generates variations of the instruction by prompting LLMs to mutate it. Based on performance, the best prompt is selected. PW incorporates a critique component that provides feedback, thus guiding and refining the prompt over multiple iterations. 
