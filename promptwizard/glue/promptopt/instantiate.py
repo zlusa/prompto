@@ -51,11 +51,12 @@ class GluePromptOpt:
                                            serialized.
         :param prompt_pool_path: Path to yaml file that has prompts
         """
-        if data_processor:
-            self.data_processor = data_processor
-        else:
-            with open(dataset_processor_pkl_path, "rb") as file:
-                self.data_processor = pickle.load(file)  # datatype: class DatasetSpecificProcessing
+        if dataset_jsonl != None:
+            if data_processor:
+                self.data_processor = data_processor
+            else:
+                with open(dataset_processor_pkl_path, "rb") as file:
+                    self.data_processor = pickle.load(file)  # datatype: class DatasetSpecificProcessing
 
         prompt_config_dict = yaml_to_dict(prompt_config_path)
         prompt_opt_cls, prompt_opt_hyperparam_cls, promptpool_cls = get_promptopt_class(
@@ -71,18 +72,20 @@ class GluePromptOpt:
 
         self.prompt_pool = yaml_to_class(prompt_pool_path, promptpool_cls, default_yaml_path)
 
-        dataset = read_jsonl(dataset_jsonl)
+        if dataset_jsonl != None:
+            dataset = read_jsonl(dataset_jsonl)
         self.prompt_opt_param.answer_format += self.prompt_pool.ans_delimiter_instruction
         base_path = join(self.setup_config.dir_info.base_dir, self.setup_config.experiment_name)
         set_logging_config(join(base_path, self.setup_config.dir_info.log_dir_name),
                            self.setup_config.mode)
         self.logger = get_glue_logger(__name__)
 
-        if len(dataset) < self.prompt_opt_param.seen_set_size:
-            self.prompt_opt_param.seen_set_size = len(dataset)
-            self.logger.info(f"Dataset has {len(dataset)} samples. However values for seen_set_size is "
-                             f"{self.prompt_opt_param.seen_set_size}. Hence resetting seen_set_size"
-                             f" to {len(dataset)}")
+        if dataset_jsonl != None:
+            if len(dataset) < self.prompt_opt_param.seen_set_size:
+                self.prompt_opt_param.seen_set_size = len(dataset)
+                self.logger.info(f"Dataset has {len(dataset)} samples. However values for seen_set_size is "
+                                f"{self.prompt_opt_param.seen_set_size}. Hence resetting seen_set_size"
+                                f" to {len(dataset)}")
 
         if self.prompt_opt_param.few_shot_count > self.prompt_opt_param.seen_set_size:
             self.prompt_opt_param.few_shot_count = self.prompt_opt_param.seen_set_size
@@ -90,7 +93,10 @@ class GluePromptOpt:
                              f"However values for seen_set_size is {self.prompt_opt_param.seen_set_size}. "
                              f"Hence resetting few_shot_count to {self.prompt_opt_param.few_shot_count}")
 
-        training_dataset = dataset[:self.prompt_opt_param.seen_set_size]
+        if dataset_jsonl != None:
+            training_dataset = dataset[:self.prompt_opt_param.seen_set_size]
+        else:
+            training_dataset = None
         self.logger.info(f"Setup configurations parameters: {self.setup_config} \n{CommonLogsStr.LOG_SEPERATOR}")
         self.logger.info(f"Prompt Optimization parameters: {self.prompt_opt_param} \n{CommonLogsStr.LOG_SEPERATOR}")
 
@@ -100,7 +106,7 @@ class GluePromptOpt:
         self.prompt_opt = prompt_opt_cls(training_dataset, base_path, self.setup_config,
                                          self.prompt_pool, self.data_processor, self.logger)
 
-    def get_best_prompt(self,use_synthetic_examples=False,run_without_train_examples=False,use_only_synthetic_examples=False) -> (str, Any):
+    def get_best_prompt(self,use_examples=False,run_without_train_examples=False,generate_synthetic_examples=False) -> (str, Any):
         """
         Call get_best_prompt() method of class PromptOptimizer & return its value.
         :return: (best_prompt, expert_profile)
@@ -109,7 +115,7 @@ class GluePromptOpt:
             identity of described in expert_profile.
         """
         start_time = time.time()
-        self.BEST_PROMPT, self.EXPERT_PROFILE = self.prompt_opt.get_best_prompt(self.prompt_opt_param,use_synthetic_examples=use_synthetic_examples,run_without_train_examples=run_without_train_examples,use_only_synthetic_examples=use_only_synthetic_examples)
+        self.BEST_PROMPT, self.EXPERT_PROFILE = self.prompt_opt.get_best_prompt(self.prompt_opt_param,use_examples=use_examples,run_without_train_examples=run_without_train_examples,generate_synthetic_examples=generate_synthetic_examples)
 
         self.logger.info(f"Time taken to find best prompt: {(time.time() - start_time)} sec")
         return self.BEST_PROMPT, self.EXPERT_PROFILE

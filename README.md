@@ -19,9 +19,6 @@
 > **PromptWizard: Task-Aware Prompt Optimization Framework**<br>
 > Eshaan Agarwal, Joykirat Singh, Vivek Dani, Raghav Magazine, Tanuja Ganu, Akshay Nambi <br>
 
->**Abstract**: <br>
-> Large language models (LLMs) have transformed AI across diverse domains, with prompting being central to their success in guiding model outputs. However, manual prompt engineering is both labor-intensive and domain-specific, necessitating the need for automated solutions. We introduce PromptWizard, a novel, fully automated framework for discrete prompt optimization, utilizing a self-evolving, self-adapting mechanism. Through a feedback-driven critique and synthesis process, PromptWizard achieves an effective balance between exploration and exploitation, iteratively refining both prompt instructions and in-context examples to generate human-readable, task-specific prompts. This guided approach systematically improves prompt quality, resulting in superior performance across 45 tasks. PromptWizard excels even with limited training data, smaller LLMs, and various LLM architectures. Additionally, our cost analysis reveals a substantial reduction in API calls, token usage, and overall cost, demonstrating PromptWizard's efficiency, scalability, and advantages over existing prompt optimization strategies.
-
 ## Overview 🌟
 <p align="center">Overview of the PromptWizard framework</p>
 <img src="./images/overview.png" >
@@ -35,6 +32,14 @@
 <p align="center">
 <img src="./images/sequential_flowchart-1.png" width="49.5%" />
 </p>
+
+PromptWizard is a discrete prompt optimization framework that employs a self-evolving mechanism where the LLM generates, critiques, and refines its own prompts and examples, continuously improving through iterative feedback and synthesis. This self-adaptive approach ensures holistic optimization by evolving both the instructions and in-context learning examples for better task performance.
+
+Three key components of PromptWizard are te following :
+
+- Feedback-driven Refinement: LLM generates, critiques, and refines its own prompts and examples, continuously improving through iterative feedback and synthesis​
+- Critique and Synthesize diverse examples: Generates synthetic examples that are robust, diverse and task-aware. Also it optimizes both prompt and examples in tandem​
+- Self generated Chain of Thought (CoT) steps with combination of positive, negative and synthetic examples
 
 
 ## Installation ⬇️
@@ -66,12 +71,15 @@ Follow these steps to set up the development environment and install the package
 
 ## Quickstart 🏃
 
-- We support [GSM8k](https://huggingface.co/datasets/openai/gsm8k), [SVAMP](https://huggingface.co/datasets/ChilleD/SVAMP), [AQUARAT](https://huggingface.co/datasets/deepmind/aqua_rat) and [Instruction_Induction(BBII)](https://github.com/xqlin98/INSTINCT/tree/main/Induction/experiments/data/instruction_induction/raw) datasets
-- Please note that time taken for prompt optimzation is dependent on the dataset. In our experiments for the above mentioned datasets, it took around 20 - 30 minutes on average.
+There are three main ways to use PromptWizard:
+- Scenario 1 : Optimizing prompts without examples
+- Scenario 2 : Generating synthetic examples and using them to optimize prompts
+- Scenario 3 : Optimizing prompts with training data
+
+**NOTE** : Refer this [notebook](demos/scenarios/dataset_scenarios_demo.ipynb) to get a detailed understanding of the usage for each of the scenarios. **This servers as a starting point to understand the usage of PromptWizard**
 
 #### High level overview of using PromptWizard
-- Load your dataset
-  - Follow steps mentioned [here](#create-custom-dataset)
+- Decide your scenario
 - Fix the configuration and environmental varibles for API calling
   - Use ```promptopt_config.yaml``` to set configurations. For example for GSM8k this [file](demos/gsm8k/configs/promptopt_config.yaml) can be used
   - Use ```.env``` to set environmental varibles. For GSM8k this [file](demos/gsm8k/.env) can be used
@@ -88,6 +96,10 @@ Follow these steps to set up the development environment and install the package
 - Run the code
   - To run PromptWizard on your custom dataset please jump [here](#run-on-custom-dataset) 
 
+#### Running PromptWizard with training data (Scenario 3)
+- We support [GSM8k](https://huggingface.co/datasets/openai/gsm8k), [SVAMP](https://huggingface.co/datasets/ChilleD/SVAMP), [AQUARAT](https://huggingface.co/datasets/deepmind/aqua_rat) and [Instruction_Induction(BBII)](https://github.com/xqlin98/INSTINCT/tree/main/Induction/experiments/data/instruction_induction/raw) datasets
+- Please note that time taken for prompt optimzation is dependent on the dataset. In our experiments for the above mentioned datasets, it took around 20 - 30 minutes on average.
+
 #### Running on GSM8k (AQUARAT/SVAMP)
 
 - Please note that this code requires access to LLMs via API calling, we use AZURE endpoints for this
@@ -101,32 +113,6 @@ Follow these steps to set up the development environment and install the package
 - A demo is presented in  [demo.ipynb](demos/bbh/demo.ipynb)
 
 
-## PromptWizard usage based on data availability 💻
-
-Following are the global parameters which can be set based on the availability of the training data
-
-  - ```run_without_train_examples``` is a global hyperparameter which can be used when there are no training samples and in-context examples are not required in the final prompt 
-  - ```use_only_synthetic_examples``` is a global hyperparameter which can be used when there are no training samples but in-context examples are required in the final prompt 
-  - ```use_synthetic_examples``` is a global hyperparameter which can be used to set the type of in-context examples in the final prompt, i.e. it can be synthetic examples or examples from train data or mixture of both. In the next section we provide further details for this scenario
-  - Scenario based usage is given below, refer this [notebook](demos/dataset_scenarios_demo.ipynb) for the cells to be replaced with the below:
-    - If there is no training data and in-context examples are not required in the final prompt, then run
-    ```
-    best_prompt, expert_profile = gp.get_best_prompt(use_synthetic_examples=False,
-                                                    run_without_train_examples=True,
-                                                    use_only_synthetic_examples=False)
-    ```
-    - If there is no training data and synthetic in-context examples are required in the final prompt, then run
-    ```
-    best_prompt, expert_profile = gp.get_best_prompt(use_synthetic_examples=False,
-                                                    run_without_train_examples=False,
-                                                    use_only_synthetic_examples=True)
-    ```
-    - If there is training data, then run
-    ```
-    best_prompt, expert_profile = gp.get_best_prompt(use_synthetic_examples=True,
-                                                    run_without_train_examples=False,
-                                                    use_only_synthetic_examples=False)
-    ```
 
 ## Run on Custom Datasets 🗃️
 
@@ -179,6 +165,10 @@ NOTE : Refer to [demos](demos) folder for examples of folders for four datasets.
           - In our experiments we found it to improve the prompt overall as it provides a step-by-step approach to reach the final answer. However if there is a constraint on the prompt length or number of prompt tokens, it can be turned off to get smaller sized prompts
         - ```generate_expert_identity``` and ```generate_intent_keywords``` : Having these helped improve the prompt as they help making the prompt relevant to the task
     - Refer ```promptopt_config.yaml``` files in folders present [here](demos)  for the descriptions used for AQUARAT, SVAMP and GSM8k. For BBII refer [description.py](demos/bbh/description.py) which has the meta instructions for each of the datasets
+    - Following are the global parameters which can be set based on the availability of the training data
+      - ```run_without_train_examples``` is a global hyperparameter which can be used when there are no training samples and in-context examples are not required in the final prompt 
+      - ```generate_synthetic_examples``` is a global hyperparameter which can be used when there are no training samples and we want to generate synthetic data for training 
+      - ```use_examples``` is a global hyperparameter which can be used to optimize prompts using training data 
 3) Create a dataset specific class which inherits ```class DatasetSpecificProcessing``` similar to ```GSM8k(DatasetSpecificProcessing)``` in [demo.ipynb](demos/gsm8k/demo.ipynb) and define the following functions in it
       1) In ```def extract_answer_from_output()``` : This is a dataset specific function, given the ```answer``` from the dataset it should extract and return  a consize form of the answer. Note that based on the dataset it can also simply return the ```answer``` as it is like in case of SVAMP and AQUARAT datasets
       2) ```def extract_final_answer()``` : This is a LLM output specific function, given the verbose answer from the LLM it should extract and return the consize final answer

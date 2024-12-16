@@ -65,3 +65,5 @@ class CritiqueNRefineParams(PromptOptimizationParams, UniversalBaseClass):
     generate_expert_identity: bool
     # Generate keywords that describe the intent of the task
     generate_intent_keywords: bool
+    # number of synthetic training examples to be generated
+    num_train_examples: int

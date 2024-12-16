@@ -3,6 +3,7 @@ import re
 from os.path import join
 from tqdm import tqdm
 from typing import Any, Dict, List
+import json
 
 from ....paramlogger import ParamLogger
 from ....paramlogger.constants import LogLiterals
@@ -12,6 +13,30 @@ from ....common.constants.log_strings import CommonLogsStr
 from ...constants import PromptOptimizationParams, SupportedPromptOpt
 from ...techniques.common_logic import DatasetSpecificProcessing, PromptOptimizer
 from ...techniques.critique_n_refine.base_classes import CritiqueNRefinePromptPool
+
+
+def extract_between(start, end, text):
+    """
+    Extracts the substring from 'text' that is between 'start' and 'end' strings.
+    
+    Parameters:
+    - start (str): The starting delimiter string.
+    - end (str): The ending delimiter string.
+    - text (str): The text to search within.
+    
+    Returns:
+    - str: The extracted substring between the start and end delimiters.
+    """
+    start_index = text.find(start)
+    if start_index == -1:
+        return '' 
+    
+    start_index += len(start)
+    
+    end_index = text.find(end, start_index)
+    if end_index == -1:
+        return ''  
+    return text[start_index:end_index]
 
 
 class CritiqueNRefine(PromptOptimizer, UniversalBaseClass):
@@ -281,7 +306,11 @@ class CritiqueNRefine(PromptOptimizer, UniversalBaseClass):
                 answer_with_reason = text[text.find(DatasetSpecificProcessing.ANSWER_KEY_IN_PROMPT) +
                                           len(DatasetSpecificProcessing.ANSWER_KEY_IN_PROMPT):].strip()
 
-                final_answer = self.data_processor.extract_final_answer(answer_with_reason)
+                if self.data_processor != None:
+                    final_answer = self.data_processor.extract_final_answer(answer_with_reason)
+                else:
+                    final_answer = extract_between(text=answer_with_reason,start="<ANS_START>",end="<ANS_END>")
+
 
                 formatted_data = {
                     DatasetSpecificProcessing.QUESTION_LITERAL: question,
@@ -375,7 +404,7 @@ class CritiqueNRefine(PromptOptimizer, UniversalBaseClass):
         few_shot_critique_prompt = self.prompt_pool.examples_critique_template_zero_shot.\
             format(prompt=params.base_instruction,
                    task_description=params.task_description,
-                   num_examples=params.few_shot_count)
+                   num_examples=params.num_train_examples)
         
         critique = self.chat_completion(few_shot_critique_prompt, self.prompt_pool.expert_profile)
 
@@ -385,15 +414,27 @@ class CritiqueNRefine(PromptOptimizer, UniversalBaseClass):
                    gt_example="",
                    critique=critique,
                    task_description=params.task_description,
-                   num_examples=params.few_shot_count)
+                   num_examples=params.num_train_examples)
         synthetic_examples = self.chat_completion(few_shot_opt_prompt, self.prompt_pool.expert_profile)
         synthetic_examples = self.extract_examples_frm_response(synthetic_examples)
         return synthetic_examples
 
     @iolog.append_to_chained_log
     def get_best_instr_by_critique(self, examples: List, params: PromptOptimizationParams):
-        example_string = self.data_processor.collate_to_str(examples,
+
+        if self.data_processor != None:
+            example_string = self.data_processor.collate_to_str(examples,
                                                             self.prompt_pool.quest_reason_ans)
+        else:
+            example_string = ""
+            for example in examples:
+                answer = example[DatasetSpecificProcessing.FINAL_ANSWER_LITERAL]
+                if DatasetSpecificProcessing.ANSWER_WITH_REASON_LITERAL in example:
+                    answer = example[DatasetSpecificProcessing.ANSWER_WITH_REASON_LITERAL]
+
+                example_string += self.prompt_pool.quest_reason_ans.format(question=example[DatasetSpecificProcessing.QUESTION_LITERAL],
+                                                        answer=answer)
+            
         meta_critique_prompt = self.prompt_pool.meta_critique_template.format(instruction=params.base_instruction,
                                                                               examples=example_string)
         critique_text = self.chat_completion(meta_critique_prompt, self.prompt_pool.expert_profile)
@@ -402,11 +443,15 @@ class CritiqueNRefine(PromptOptimizer, UniversalBaseClass):
                                                                                   critique=critique_text,
                                                                                   steps_per_sample=1)
         refined_prompts = self.chat_completion(critique_refine_prompt)
-        refined_instructions = re.findall(self.data_processor.TEXT_DELIMITER_PATTERN, refined_prompts)
+
+        if self.data_processor != None:
+            refined_instructions = re.findall(self.data_processor.TEXT_DELIMITER_PATTERN, refined_prompts)
+        else:
+            refined_instructions = re.findall(DatasetSpecificProcessing.TEXT_DELIMITER_PATTERN, refined_prompts)
 
         return refined_instructions[0] if refined_instructions else None
 
-    def get_best_prompt(self, params: PromptOptimizationParams,use_synthetic_examples=False,run_without_train_examples=False,use_only_synthetic_examples=False) -> (str, Any):
+    def get_best_prompt(self, params: PromptOptimizationParams,use_examples=False,run_without_train_examples=False,generate_synthetic_examples=False) -> (str, Any):
         """
         Perform `params.max_iterations` iterations for optimizing your prompt. And return the best prompt found so far.
 
@@ -416,8 +461,8 @@ class CritiqueNRefine(PromptOptimizer, UniversalBaseClass):
 
         current_base_instruction = params.base_instruction
 
-        if not use_only_synthetic_examples:
-            print("\nMutating and Refining Task Description....")
+        if not generate_synthetic_examples:
+            print("\nMutating Task Description....")
             # Mutate and refine task description
             for round_num in tqdm(range(1, params.mutate_refine_iterations+1), desc="Iterations completed: "):
                 self.logger.info(f"{CommonLogsStr.LOG_SEPERATOR} + Starting iteration: {round_num} \n "
@@ -431,7 +476,7 @@ class CritiqueNRefine(PromptOptimizer, UniversalBaseClass):
                     prompt_index = 1
                     print("\nOptimization Finished...")
                     print("\nPossible prompt variations:")
-                    for candidate in candidate_prompts:
+                    for candidate in candidate_prompts[:5]:
                         final_best_prompt = self.prompt_pool.final_prompt.format(
                         instruction=candidate,
                         answer_format=params.answer_format,
@@ -491,15 +536,18 @@ class CritiqueNRefine(PromptOptimizer, UniversalBaseClass):
                     if refined_instruction:
                         params.base_instruction = refined_instruction
                 # comment this to turn off synthetic examples
-                elif use_synthetic_examples:
+                elif use_examples:
                         examples = self.generate_best_examples(examples, params)
         else:
-            examples = []
-            print("\nRefining Task Description and Examples iteratively...")
-            for i in tqdm(range(params.refine_task_eg_iterations)):
-                examples = self.generate_best_examples_zero_shot(params)
-                refined_instruction = self.get_best_instr_by_critique(examples, params)
-                params.base_instruction = refined_instruction
+            print("Generating Sythetic Examples....")
+            train_examples = self.generate_best_examples_zero_shot(params)
+            with open("train_synthetic.jsonl", 'w') as file:
+                for record in train_examples:
+                    json.dump(record, file)
+                    file.write('\n')
+
+            print("Synthetic examples saved at train.jsonl....")
+            return "",""
     
 
         if params.generate_reasoning:
@@ -514,8 +562,17 @@ class CritiqueNRefine(PromptOptimizer, UniversalBaseClass):
                                                                                 f"{DatasetSpecificProcessing.ANSWER_START}" + \
                                                                                 f"{example[DatasetSpecificProcessing.FINAL_ANSWER_LITERAL]}" + \
                                                                                 f"{DatasetSpecificProcessing.ANSWER_END}"
+        if self.data_processor != None:
+            example_string = self.data_processor.collate_to_str(examples, self.prompt_pool.quest_reason_ans)
+        else:
+            example_string = ""
+            for example in examples:
+                answer = example[DatasetSpecificProcessing.FINAL_ANSWER_LITERAL]
+                if DatasetSpecificProcessing.ANSWER_WITH_REASON_LITERAL in example:
+                    answer = example[DatasetSpecificProcessing.ANSWER_WITH_REASON_LITERAL]
 
-        example_string = self.data_processor.collate_to_str(examples, self.prompt_pool.quest_reason_ans)
+                example_string += self.prompt_pool.quest_reason_ans.format(question=example[DatasetSpecificProcessing.QUESTION_LITERAL],
+                                                            answer=answer)
 
         if params.few_shot_count == 0:
             final_best_prompt = self.prompt_pool.final_prompt.format(
