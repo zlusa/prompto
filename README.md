@@ -40,6 +40,7 @@ Three key components of PromptWizard are te following :
 <p align="center">
 <img src="./images/sequential_flowchart-1.png" width="49.5%" />
 </p>
+
 ## Installation ⬇️
 
 Follow these steps to set up the development environment and install the package:
