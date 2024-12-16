@@ -76,7 +76,7 @@ There are three main ways to use PromptWizard:
 - Scenario 2 : Generating synthetic examples and using them to optimize prompts
 - Scenario 3 : Optimizing prompts with training data
 
-**NOTE** : Refer this [notebook](demos/scenarios/dataset_scenarios_demo.ipynb) to get a detailed understanding of the usage for each of the scenarios. **This servers as a starting point to understand the usage of PromptWizard**
+**NOTE** : Refer this [notebook](demos/scenarios/dataset_scenarios_demo.ipynb) to get a detailed understanding of the usage for each of the scenarios. **This serves as a starting point to understand the usage of PromptWizard**
 
 #### High level overview of using PromptWizard
 - Decide your scenario

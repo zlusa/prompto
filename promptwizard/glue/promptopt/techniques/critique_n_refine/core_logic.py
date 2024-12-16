@@ -469,14 +469,14 @@ class CritiqueNRefine(PromptOptimizer, UniversalBaseClass):
                                 f"current_base_instruction: {current_base_instruction}")
                 candidate_prompts = self.gen_different_styles(current_base_instruction,
                                                             params.task_description,
-                                                            params.mutation_rounds,
+                                                            params.mutation_rounds+1,
                                                             params.style_variation)
                 
                 if run_without_train_examples:
                     prompt_index = 1
                     print("\nOptimization Finished...")
                     print("\nPossible prompt variations:")
-                    for candidate in candidate_prompts[:5]:
+                    for candidate in candidate_prompts[:params.mutation_rounds]:
                         final_best_prompt = self.prompt_pool.final_prompt.format(
                         instruction=candidate,
                         answer_format=params.answer_format,
