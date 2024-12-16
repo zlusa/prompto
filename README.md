@@ -23,16 +23,6 @@
 <p align="center">Overview of the PromptWizard framework</p>
 <img src="./images/overview.png" >
 
-<p align="center">Process of iterative optimization of instructions</p>
-<p align="center">
-  <img src="./images/iterative_flowchart-1.png" width="49.5%" />
-</p>
-
-<p align="center">Process of sequential optimization of instruction and examples</p>
-<p align="center">
-<img src="./images/sequential_flowchart-1.png" width="49.5%" />
-</p>
-
 PromptWizard is a discrete prompt optimization framework that employs a self-evolving mechanism where the LLM generates, critiques, and refines its own prompts and examples, continuously improving through iterative feedback and synthesis. This self-adaptive approach ensures holistic optimization by evolving both the instructions and in-context learning examples for better task performance.
 
 Three key components of PromptWizard are te following :
@@ -41,7 +31,15 @@ Three key components of PromptWizard are te following :
 - Critique and Synthesize diverse examples: Generates synthetic examples that are robust, diverse and task-aware. Also it optimizes both prompt and examples in tandem​
 - Self generated Chain of Thought (CoT) steps with combination of positive, negative and synthetic examples
 
+<p align="center">Stage 1: Iterative optimization of instructions</p>
+<p align="center">
+  <img src="./images/iterative_flowchart-1.png" width="49.5%" />
+</p>
 
+<p align="center">Stage 2: Sequential optimization of instruction and examples</p>
+<p align="center">
+<img src="./images/sequential_flowchart-1.png" width="49.5%" />
+</p>
 ## Installation ⬇️
 
 Follow these steps to set up the development environment and install the package:
