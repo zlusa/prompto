@@ -9,7 +9,7 @@
     <img src=images/msr_blog.png width="16">
     Blog Post
   </a>
-  <a href=''>
+  <a href='https://microsoft.github.io/PromptWizard/'>
     <img src=images/github.png width="16">
     Project Website
   </a>
