@@ -5,7 +5,7 @@
   <a href='https://arxiv.org/abs/2405.18369'>
     <img src=https://img.shields.io/badge/arXiv-2409.10566-b31b1b.svg>
   </a>
-  <a href=''>
+  <a href='https://www.microsoft.com/en-us/research/blog/promptwizard-the-future-of-prompt-optimization-through-feedback-driven-self-evolving-prompts/'>
     <img src=images/msr_blog.png width="16">
     Blog Post
   </a>
