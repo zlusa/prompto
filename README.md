@@ -91,7 +91,6 @@ There are three main ways to use PromptWizard:
   OPENAI_MODEL_NAME ="XXXX"
   
   # If the first variable is set to False then fill the following three
-
   AZURE_OPENAI_ENDPOINT="XXXXX" 
   # Replace with your Azure OpenAI Endpoint
 
