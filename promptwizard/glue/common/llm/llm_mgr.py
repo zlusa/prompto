@@ -15,26 +15,36 @@ import os
 logger = get_glue_logger(__name__)
 
 def call_api(messages):
+
     from openai import OpenAI
-    from azure.identity import DefaultAzureCredential, get_bearer_token_provider, AzureCliCredential
+    from azure.identity import get_bearer_token_provider, AzureCliCredential
     from openai import AzureOpenAI
-    
-    token_provider = get_bearer_token_provider(
-            AzureCliCredential(), "https://cognitiveservices.azure.com/.default"
-        )
-    client = AzureOpenAI(
-        api_version=os.environ["OPENAI_API_VERSION"],
-        azure_endpoint=os.environ["AZURE_OPENAI_ENDPOINT"],
-        azure_ad_token_provider=token_provider
-        )
-    response = client.chat.completions.create(
-        model=os.environ["AZURE_OPENAI_DEPLOYMENT_NAME"],
+
+    if os.environ['USE_OPENAI_API_KEY'] == "True":
+        client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+
+        response = client.chat.completions.create(
+        model=os.environ["OPENAI_MODEL_NAME"],
         messages=messages,
         temperature=0.0,
-    )
+        )
+    else:
+        token_provider = get_bearer_token_provider(
+                AzureCliCredential(), "https://cognitiveservices.azure.com/.default"
+            )
+        client = AzureOpenAI(
+            api_version=os.environ["OPENAI_API_VERSION"],
+            azure_endpoint=os.environ["AZURE_OPENAI_ENDPOINT"],
+            azure_ad_token_provider=token_provider
+            )
+        response = client.chat.completions.create(
+            model=os.environ["AZURE_OPENAI_DEPLOYMENT_NAME"],
+            messages=messages,
+            temperature=0.0,
+        )
+
     prediction = response.choices[0].message.content
     return prediction
-
 
 
 class LLMMgr:

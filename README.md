@@ -83,6 +83,15 @@ There are three main ways to use PromptWizard:
   - Use ```promptopt_config.yaml``` to set configurations. For example for GSM8k this [file](demos/gsm8k/configs/promptopt_config.yaml) can be used
   - Use ```.env``` to set environmental varibles. For GSM8k this [file](demos/gsm8k/.env) can be used
   ```
+  USE_OPENAI_API_KEY="XXXX"
+  # Replace with True/False based on whether or not to use OPENAI API key
+
+  # If the first variable is set to True then fill the following two
+  OPENAI_API_KEY="XXXX"
+  OPENAI_MODEL_NAME ="XXXX"
+  
+  # If the first variable is set to False then fill the following three
+
   AZURE_OPENAI_ENDPOINT="XXXXX" 
   # Replace with your Azure OpenAI Endpoint
 
@@ -101,7 +110,7 @@ There are three main ways to use PromptWizard:
 
 #### Running on GSM8k (AQUARAT/SVAMP)
 
-- Please note that this code requires access to LLMs via API calling, we use AZURE endpoints for this
+- Please note that this code requires access to LLMs via API calling for which we support AZURE endpoints or OPENAI keys
 - Set the AZURE endpoint configurations in [.env](demos/gsm8k/.env)
 - Follow the steps in [demo.ipynb](demos/gsm8k/demo.ipynb) to download the data, run the prompt optimization and carry out inference.
 

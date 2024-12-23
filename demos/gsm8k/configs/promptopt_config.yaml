@@ -38,6 +38,8 @@ answer_format: "For each question present the reasoning followed by the correct 
 seen_set_size: 25
 # Number of examples to be given for few shots
 few_shot_count: 5
+# Number of synthetic training examples to be generated
+num_train_examples: 20
 # Generate synthetic reasoning
 generate_reasoning: true
 # Generate description of an expert which can solve the task at hand
