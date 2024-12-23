@@ -153,14 +153,19 @@ class CritiqueNRefine(PromptOptimizer, UniversalBaseClass):
 
         refined_prompts = self.chat_completion(critique_refine_prompt, self.prompt_pool.expert_profile)
         
-        refined_prompts = re.findall(DatasetSpecificProcessing.TEXT_DELIMITER_PATTERN, refined_prompts)[0]
+        refined_prompts = re.findall(DatasetSpecificProcessing.TEXT_DELIMITER_PATTERN, refined_prompts)
+        
+        if refined_prompts:
+            final_refined_prompts = refined_prompts[0]
+        else:
+            raise ValueError("The LLM ouput is not in the expected format. Please rerun the code...")
 
         self.logger.info(f"Prompt to get critique:\n {meta_critique_prompt}"
                          f"critique received from LLM:\n {critique_text}"
                          f"Prompt to get Refinement after critique, from LLM:\n {critique_refine_prompt}"
-                         f"Refined prompts received from LLM:\n {refined_prompts}")
+                         f"Refined prompts received from LLM:\n {final_refined_prompts}")
 
-        return refined_prompts
+        return final_refined_prompts
 
     @iolog.log_io_params
     def get_prompt_score(self, instructions: List[str], params: PromptOptimizationParams) -> List:
