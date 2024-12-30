@@ -29,7 +29,7 @@ class DatasetSpecificProcessing(ABC):
     ANSWER_KEY_IN_PROMPT = "[Answer]"
     # Regular expression pattern to match text between <START> and <END> tags
     TEXT_DELIMITER_PATTERN = r"(?s)(?<=<START>)(.*?)(?=<END>)"
-    TEXT_DELIMITER_PATTERN_MUTATION = r"(?s)(?<=<START>)(.*?)(?=</END>)"
+    TEXT_DELIMITER_PATTERN_MUTATION = r"(?s)(?<=<START>)(.*?)(?=<END>)"
     ANSWER_START = "<ANS_START>"
     ANSWER_END = "<ANS_END>"
     ANSWER_DELIMITER_PATTERN = r"(?s)(?<=" + ANSWER_START + ")(.*?)(?=" + ANSWER_END + ")"
