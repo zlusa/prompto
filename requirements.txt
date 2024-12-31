@@ -5,5 +5,4 @@ google-cloud-aiplatform==1.42.1
 Pillow==10.2.0
 pyperclip==1.8.2
 llama-index-core>=0.10.1
-google-generativeai>=0.3.2
-git+https://github.com/zlusa/prompto.git 
+google-generativeai>=0.3.2 

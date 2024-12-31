@@ -3,7 +3,7 @@ import os
 from dotenv import load_dotenv
 import json
 import pandas as pd
-from prompto.glue.common.llm.llm_mgr import call_api
+from llm_utils import call_api
 import PIL.Image
 import io
 import base64
