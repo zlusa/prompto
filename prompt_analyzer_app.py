@@ -420,7 +420,6 @@ elif input_type == "Image":
             additional_details_str += "\nCharacter Details:\n" + "\n".join([f"- {k}: {v}" for k, v in char_details.items() if v])
         
         if uploaded_file:
-            import base64
             # Display the uploaded image
             st.image(uploaded_file, caption="Uploaded Image", use_container_width=True)
             
@@ -435,25 +434,13 @@ elif input_type == "Image":
             user_input = json.dumps(user_input)  # Convert to JSON string for processing
 else:  # Code
     user_input = st.text_area("Enter your code:", height=150)
-    
+
 # Analysis button
 if st.button("Analyze & Generate Prompts"):
     if user_input:
         with st.spinner("Analyzing input..."):
-            # Initialize gemini_analysis at the correct scope
-            gemini_analysis = None
-            
             # Get analysis
             analysis = analyze_input(user_input, input_type.lower())
-            
-            # If it's an image, get the Gemini analysis first
-            if input_type.lower() == "image" and analysis:
-                try:
-                    image_data = json.loads(user_input)
-                    image_bytes = base64.b64decode(image_data['image_base64'])
-                    gemini_analysis = analyze_image_with_gemini(image_bytes, image_data['additional_details'])
-                except Exception as e:
-                    st.error(f"Error getting Gemini analysis: {str(e)}")
             
             if analysis:
                 # Display analysis
@@ -464,9 +451,9 @@ if st.button("Analyze & Generate Prompts"):
                     col1, col2 = st.columns([6, 4])
                     
                     with col1:
-                        if input_type.lower() == "image" and gemini_analysis:
+                        if input_type.lower() == "image" and analysis['gemini_analysis']:
                             with st.expander("🔍 Gemini's Visual Analysis", expanded=True):
-                                st.markdown(gemini_analysis)
+                                st.markdown(analysis['gemini_analysis'])
                         
                         with st.expander("🎨 Detailed Analysis", expanded=True):
                             if input_type.lower() == "image" and 'visual_analysis' in analysis:
@@ -641,6 +628,7 @@ if st.button("Analyze & Generate Prompts"):
                 st.divider()
                 
                 # Save Results button
+                st.divider()
                 if st.button("💾 Save Results", key="save_results", use_container_width=True):
                     # Create results directory if it doesn't exist
                     os.makedirs("results", exist_ok=True)
@@ -648,7 +636,7 @@ if st.button("Analyze & Generate Prompts"):
                     # Save results to file
                     results = {
                         "analysis": analysis,
-                        "optimized_prompt": optimized_prompt,
+                        "optimized_prompt": optimized_prompt if input_type.lower() == "text" else None,
                         "input_type": input_type,
                         "timestamp": str(pd.Timestamp.now())
                     }
@@ -712,9 +700,25 @@ Avoid These Common Pitfalls:
                         st.code(optimized_prompt)
                         st.success("✅ Optimized prompt copied!")
                 
-                # Save Results button (keep existing code)
+                # Save Results button
                 st.divider()
                 if st.button("💾 Save Results", key="save_results", use_container_width=True):
+                    # Create results directory if it doesn't exist
+                    os.makedirs("results", exist_ok=True)
+                    
+                    # Save results to file
+                    results = {
+                        "analysis": analysis,
+                        "optimized_prompt": optimized_prompt if input_type.lower() == "text" else None,
+                        "input_type": input_type,
+                        "timestamp": str(pd.Timestamp.now())
+                    }
+                    
+                    filename = f"results/prompt_analysis_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.json"
+                    with open(filename, "w") as f:
+                        json.dump(results, f, indent=2)
+                    
+                    st.success(f"Results saved to {filename}")
     else:
         st.warning("Please enter some input first!")
 
