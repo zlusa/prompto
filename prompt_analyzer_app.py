@@ -16,6 +16,10 @@ import pyperclip
 # Load environment variables
 load_dotenv()
 
+# Initialize session state for additional details
+if 'additional_details_str' not in st.session_state:
+    st.session_state.additional_details_str = ""
+
 # Configure Gemini
 GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY')
 if not GOOGLE_API_KEY:
@@ -105,6 +109,9 @@ def analyze_input(user_input, input_type="text"):
             {image_data['additional_details']}
 
             Create a structured analysis that can help generate effective prompts for recreating or describing this image."""
+            
+            # Store additional details in session state
+            st.session_state.additional_details_str = image_data['additional_details']
         except json.JSONDecodeError:
             analysis_content = user_input
         except Exception as e:
@@ -112,6 +119,7 @@ def analyze_input(user_input, input_type="text"):
             return None
     else:
         analysis_content = user_input
+        st.session_state.additional_details_str = ""
     
     analysis_prompt = [
         {
@@ -158,12 +166,12 @@ def analyze_input(user_input, input_type="text"):
         st.error(f"Error analyzing input: {str(e)}")
         return None
 
-def generate_optimized_prompt(analysis, input_type="text", additional_context=""):
+def generate_optimized_prompt(analysis, input_type="text"):
     """Generate optimized prompt based on analysis and context"""
     
     context_specific = f"""
     Consider these specific requirements:
-    - Purpose: {additional_context}
+    - Purpose: {st.session_state.additional_details_str}
     - Style elements from the analysis: {analysis.get('visual_analysis', {}).get('style_analysis', '')}
     - Mood elements from the analysis: {analysis.get('visual_analysis', {}).get('mood_and_tone', '')}
     """
@@ -342,7 +350,7 @@ if st.button("Analyze & Generate Prompts"):
                 # Optimized prompt first
                 with st.expander("Optimized Prompt", expanded=True):
                     with st.spinner("Generating optimized prompt..."):
-                        optimized_prompt = generate_optimized_prompt(analysis, input_type.lower(), additional_details_str)
+                        optimized_prompt = generate_optimized_prompt(analysis, input_type.lower())
                         if optimized_prompt:
                             st.success(optimized_prompt)
                 
