@@ -87,24 +87,40 @@ def analyze_text(text_input):
     analysis_prompt = [
         {
             "role": "system",
-            "content": """You are an expert prompt engineer specializing in creating effective prompts for AI models. Your task is to:
-            1. Analyze the user's input to understand their intent
-            2. Create a set of optimized prompts that will achieve their goal
-            3. Provide variations with different approaches and styles
+            "content": """You are an expert prompt engineer who excels at analyzing user requests and determining the most appropriate expert role. Your task is to:
+            1. Analyze the user's input to understand their intent and required expertise
+            2. Determine the most appropriate expert role(s) for this task
+            3. Create prompts that embody the expertise and perspective of that role
 
-            For example, if the user input is "New Year celebration", you should:
-            - Identify the core theme (celebration, festivity, new beginnings)
-            - Consider different aspects (visual, emotional, cultural)
-            - Create prompts that capture various perspectives
+            For example:
+            - For "Write a blog post about AI trends": Role = Professional Writer & SEO Expert
+            - For "Help me understand quadratic equations": Role = Math Teacher & Educational Expert
+            - For "Create a marketing campaign": Role = Marketing Strategist & Brand Expert
 
             Provide your analysis in the following JSON format:
             {
-                "core_theme": "The central theme or concept",
-                "prompt_analysis": {
-                    "intent": "What the user wants to achieve",
-                    "key_elements": ["List of important elements to include"],
-                    "style_suggestions": ["List of potential styles or approaches"],
-                    "variations": ["Different angles or perspectives to consider"]
+                "detected_roles": {
+                    "primary_role": "The main expert role needed",
+                    "secondary_roles": ["Additional expert roles that would be valuable"],
+                    "role_justification": "Explanation of why these roles are most appropriate"
+                },
+                "task_analysis": {
+                    "core_objective": "The main goal to be achieved",
+                    "key_requirements": ["List of critical requirements"],
+                    "target_audience": "Who this is intended for",
+                    "success_criteria": ["What defines success for this task"]
+                },
+                "expert_perspective": {
+                    "approach": "How the expert would approach this task",
+                    "key_considerations": ["Important factors the expert would consider"],
+                    "professional_tips": ["Expert tips and best practices"],
+                    "common_pitfalls": ["What to avoid, from an expert's perspective"]
+                },
+                "role_specific_prompts": {
+                    "expert_prompt": "A detailed prompt written from the expert's perspective",
+                    "step_by_step": ["Detailed steps the expert would take"],
+                    "advanced_techniques": ["Specialized methods or approaches"],
+                    "quality_checks": ["How to verify the quality of the output"]
                 },
                 "optimized_prompts": {
                     "detailed": "A comprehensive, detailed prompt",
@@ -112,16 +128,16 @@ def analyze_text(text_input):
                     "creative": "An artistic or imaginative take"
                 },
                 "additional_suggestions": ["List of tips or modifications"],
-                "reasoning": "Explanation of your prompt design choices"
+                "reasoning": "Explanation of the analysis and prompt design choices"
             }"""
         },
         {
             "role": "user",
-            "content": f"""Create optimized prompts based on this input:
+            "content": f"""Analyze this request and determine the most appropriate expert role(s):
 
             {text_input}
 
-            Consider different approaches and provide variations that could work well for different purposes."""
+            Provide a detailed analysis from the expert's perspective and create optimized prompts that embody their expertise."""
         }
     ]
     
@@ -459,29 +475,56 @@ if st.button("Analyze & Generate Prompts"):
                                     st.write(f"**{key.replace('_', ' ').title()}:**")
                                     st.info(value)
                             elif input_type.lower() == "text":
-                                st.write("**Core Theme:**")
-                                st.info(analysis.get('core_theme', ''))
+                                # Display detected roles
+                                st.write("**🎭 Expert Roles:**")
+                                roles = analysis.get('detected_roles', {})
+                                st.write("*Primary Role:*")
+                                st.success(roles.get('primary_role', ''))
                                 
-                                st.write("**Prompt Analysis:**")
-                                prompt_analysis = analysis.get('prompt_analysis', {})
-                                st.write("*Intent:*")
-                                st.info(prompt_analysis.get('intent', ''))
+                                st.write("*Secondary Roles:*")
+                                for role in roles.get('secondary_roles', []):
+                                    st.info(f"• {role}")
                                 
-                                st.write("*Key Elements:*")
-                                for elem in prompt_analysis.get('key_elements', []):
-                                    st.success(f"• {elem}")
+                                st.write("*Role Justification:*")
+                                st.info(roles.get('role_justification', ''))
                                 
-                                st.write("*Style Suggestions:*")
-                                for style in prompt_analysis.get('style_suggestions', []):
-                                    st.info(f"• {style}")
+                                # Display task analysis
+                                st.write("**📋 Task Analysis:**")
+                                task = analysis.get('task_analysis', {})
+                                st.write("*Core Objective:*")
+                                st.success(task.get('core_objective', ''))
                                 
-                                st.write("*Variations:*")
-                                for var in prompt_analysis.get('variations', []):
-                                    st.warning(f"• {var}")
+                                st.write("*Key Requirements:*")
+                                for req in task.get('key_requirements', []):
+                                    st.info(f"• {req}")
+                                
+                                st.write("*Target Audience:*")
+                                st.warning(task.get('target_audience', ''))
+                                
+                                st.write("*Success Criteria:*")
+                                for crit in task.get('success_criteria', []):
+                                    st.success(f"• {crit}")
                     
                     with col2:
-                        with st.expander("💭 Reasoning", expanded=True):
-                            st.info(analysis['reasoning'])
+                        with st.expander("💭 Expert Perspective", expanded=True):
+                            if input_type.lower() == "text":
+                                expert = analysis.get('expert_perspective', {})
+                                st.write("**Approach:**")
+                                st.info(expert.get('approach', ''))
+                                
+                                st.write("**Key Considerations:**")
+                                for cons in expert.get('key_considerations', []):
+                                    st.success(f"• {cons}")
+                                
+                                st.write("**Professional Tips:**")
+                                for tip in expert.get('professional_tips', []):
+                                    st.info(f"• {tip}")
+                                
+                                st.write("**Common Pitfalls:**")
+                                for pitfall in expert.get('common_pitfalls', []):
+                                    st.error(f"• {pitfall}")
+                            else:
+                                st.info(analysis['reasoning'])
                         
                         if input_type.lower() == "text":
                             with st.expander("🎯 Additional Suggestions", expanded=True):
@@ -492,7 +535,34 @@ if st.button("Analyze & Generate Prompts"):
                 st.subheader("✨ Generated Prompts")
                 
                 if input_type.lower() == "text":
-                    # Display the three types of prompts for text input
+                    # Display expert-specific prompts first
+                    role_prompts = analysis.get('role_specific_prompts', {})
+                    
+                    with st.expander("👨‍💼 Expert's Detailed Prompt", expanded=True):
+                        expert_prompt = role_prompts.get('expert_prompt', '')
+                        st.success(expert_prompt)
+                        if st.button("📋 Copy Expert", key="copy_expert"):
+                            st.code(expert_prompt)
+                            st.success("✅ Expert prompt copied!")
+                    
+                    with st.expander("📝 Expert's Step-by-Step Guide", expanded=True):
+                        st.write("**Steps:**")
+                        for step in role_prompts.get('step_by_step', []):
+                            st.info(f"• {step}")
+                    
+                    with st.expander("🎓 Advanced Techniques", expanded=True):
+                        st.write("**Specialized Methods:**")
+                        for technique in role_prompts.get('advanced_techniques', []):
+                            st.success(f"• {technique}")
+                    
+                    with st.expander("✅ Quality Checks", expanded=True):
+                        st.write("**Verification Steps:**")
+                        for check in role_prompts.get('quality_checks', []):
+                            st.warning(f"• {check}")
+                    
+                    st.divider()
+                    
+                    # Display the standard optimized prompts
                     optimized_prompts = analysis.get('optimized_prompts', {})
                     
                     with st.expander("Detailed Prompt", expanded=True):
