@@ -1,6 +1,6 @@
-streamlit
-python-dotenv
-Pillow
-google-generativeai
-pandas
-promptwizard 
+streamlit==1.31.1
+pandas==2.2.0
+python-dotenv==1.0.1
+google-cloud-aiplatform==1.42.1
+Pillow==10.2.0
+pyperclip==1.8.2 
