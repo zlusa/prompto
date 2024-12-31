@@ -82,75 +82,37 @@ def analyze_image_with_gemini(image_bytes, additional_context=""):
         st.error(f"Error analyzing image with Gemini: {str(e)}")
         return None
 
-def analyze_input(user_input, input_type="text"):
-    """Let LLM analyze the input and determine role and instructions"""
-    
-    gemini_analysis = None  # Initialize gemini_analysis
-    
-    if input_type.lower() == "image":
-        try:
-            image_data = json.loads(user_input)
-            
-            # First get Gemini's analysis of the image
-            image_bytes = base64.b64decode(image_data['image_base64'])
-            gemini_analysis = analyze_image_with_gemini(image_bytes, image_data['additional_details'])
-            
-            if not gemini_analysis:
-                st.error("Failed to get Gemini analysis")
-                return None
-            
-            # Create prompt for the second phase of analysis
-            analysis_content = f"""Based on this detailed visual analysis, help create effective prompts:
-
-            VISUAL ANALYSIS:
-            {gemini_analysis}
-
-            ADDITIONAL CONTEXT:
-            {image_data['additional_details']}
-
-            Create a structured analysis that can help generate effective prompts for recreating or describing this image."""
-            
-            # Store additional details in session state
-            st.session_state.additional_details_str = image_data['additional_details']
-        except json.JSONDecodeError:
-            analysis_content = user_input
-        except Exception as e:
-            st.error(f"Error processing image: {str(e)}")
-            return None
-    else:
-        analysis_content = user_input
-        st.session_state.additional_details_str = ""
-    
+def analyze_text(text_input):
+    """Analyze text input and generate optimized prompts"""
     analysis_prompt = [
         {
             "role": "system",
-            "content": """You are an expert visual analyst and prompt engineer who excels at:
-            1. Providing extremely detailed visual descriptions
-            2. Identifying key artistic and technical elements
-            3. Understanding style and composition
-            4. Creating effective prompts based on visual analysis
+            "content": """You are an expert prompt engineer who excels at:
+            1. Understanding user requirements and context
+            2. Identifying key themes and objectives
+            3. Creating effective prompts for various purposes
+            4. Optimizing language for clarity and impact
 
             Provide your analysis in the following JSON format:
             {
-                "detected_role": "Visual Analysis Expert",
-                "visual_analysis": {
-                    "subject_description": "Detailed description of the main subject",
-                    "style_analysis": "Analysis of artistic style and technique",
-                    "composition_details": "Analysis of composition and layout",
-                    "mood_and_tone": "Description of emotional quality and atmosphere",
-                    "technical_aspects": "Analysis of technical image qualities"
+                "detected_purpose": "The main goal or purpose identified in the text",
+                "text_analysis": {
+                    "key_themes": "Main themes and concepts identified",
+                    "tone_and_style": "Analysis of the desired tone and style",
+                    "requirements": "Specific requirements or constraints identified",
+                    "target_audience": "Intended audience or use case"
                 },
-                "task_description": "Detailed description of what needs to be done",
-                "base_instruction": "Step-by-step approach to recreate or understand this image",
-                "example_prompts": ["List of 3 alternative prompts incorporating the analysis"],
+                "task_description": "Clear description of what needs to be achieved",
+                "base_instruction": "Core instruction derived from the input",
+                "example_prompts": ["List of 3 alternative prompts optimized for the purpose"],
                 "reasoning": "Explanation of the analysis and prompt choices"
             }"""
         },
         {
             "role": "user",
-            "content": f"""Analyze this {input_type} input and provide a detailed visual analysis:
+            "content": f"""Analyze this text input and create optimized prompts:
 
-            {analysis_content}"""
+            {text_input}"""
         }
     ]
     
@@ -163,18 +125,166 @@ def analyze_input(user_input, input_type="text"):
             return json.loads(json_match.group())
         return None
     except Exception as e:
-        st.error(f"Error analyzing input: {str(e)}")
+        st.error(f"Error analyzing text: {str(e)}")
+        return None
+
+def analyze_code(code_input):
+    """Analyze code input and generate optimized prompts"""
+    analysis_prompt = [
+        {
+            "role": "system",
+            "content": """You are an expert code analyst and prompt engineer who excels at:
+            1. Understanding code structure and purpose
+            2. Identifying programming patterns and best practices
+            3. Creating effective prompts for code-related tasks
+            4. Optimizing technical communication
+
+            Provide your analysis in the following JSON format:
+            {
+                "detected_language": "Programming language identified",
+                "code_analysis": {
+                    "purpose": "Main purpose or functionality of the code",
+                    "structure": "Analysis of code structure and organization",
+                    "patterns": "Identified programming patterns or paradigms",
+                    "technical_requirements": "Technical specifications or dependencies"
+                },
+                "task_description": "Clear description of the code-related task",
+                "base_instruction": "Core technical instruction",
+                "example_prompts": ["List of 3 alternative prompts for code-related tasks"],
+                "reasoning": "Technical explanation of the analysis and prompt choices"
+            }"""
+        },
+        {
+            "role": "user",
+            "content": f"""Analyze this code and create optimized prompts:
+
+            {code_input}"""
+        }
+    ]
+    
+    try:
+        response = call_api(analysis_prompt)
+        # Extract JSON from response
+        import re
+        json_match = re.search(r'\{.*\}', response, re.DOTALL)
+        if json_match:
+            return json.loads(json_match.group())
+        return None
+    except Exception as e:
+        st.error(f"Error analyzing code: {str(e)}")
+        return None
+
+def analyze_image(image_data):
+    """Analyze image input and generate optimized prompts"""
+    try:
+        # First get Gemini's analysis of the image
+        image_bytes = base64.b64decode(image_data['image_base64'])
+        gemini_analysis = analyze_image_with_gemini(image_bytes, image_data['additional_details'])
+        
+        if not gemini_analysis:
+            st.error("Failed to get Gemini analysis")
+            return None
+        
+        # Store additional details in session state
+        st.session_state.additional_details_str = image_data['additional_details']
+        
+        # Create prompt for the second phase of analysis
+        analysis_prompt = [
+            {
+                "role": "system",
+                "content": """You are an expert visual analyst and prompt engineer who excels at:
+                1. Providing extremely detailed visual descriptions
+                2. Identifying key artistic and technical elements
+                3. Understanding style and composition
+                4. Creating effective prompts based on visual analysis
+
+                Provide your analysis in the following JSON format:
+                {
+                    "detected_role": "Visual Analysis Expert",
+                    "visual_analysis": {
+                        "subject_description": "Detailed description of the main subject",
+                        "style_analysis": "Analysis of artistic style and technique",
+                        "composition_details": "Analysis of composition and layout",
+                        "mood_and_tone": "Description of emotional quality and atmosphere",
+                        "technical_aspects": "Analysis of technical image qualities"
+                    },
+                    "task_description": "Detailed description of what needs to be done",
+                    "base_instruction": "Step-by-step approach to recreate or understand this image",
+                    "example_prompts": ["List of 3 alternative prompts incorporating the analysis"],
+                    "reasoning": "Explanation of the analysis and prompt choices"
+                }"""
+            },
+            {
+                "role": "user",
+                "content": f"""Based on this detailed visual analysis, help create effective prompts:
+
+                VISUAL ANALYSIS:
+                {gemini_analysis}
+
+                ADDITIONAL CONTEXT:
+                {image_data['additional_details']}
+
+                Create a structured analysis that can help generate effective prompts for recreating or describing this image."""
+            }
+        ]
+        
+        response = call_api(analysis_prompt)
+        # Extract JSON from response
+        import re
+        json_match = re.search(r'\{.*\}', response, re.DOTALL)
+        if json_match:
+            result = json.loads(json_match.group())
+            result['gemini_analysis'] = gemini_analysis
+            return result
+        return None
+    except Exception as e:
+        st.error(f"Error analyzing image: {str(e)}")
+        return None
+
+def analyze_input(user_input, input_type="text"):
+    """Route the input to the appropriate analyzer based on type"""
+    if input_type.lower() == "text":
+        return analyze_text(user_input)
+    elif input_type.lower() == "code":
+        return analyze_code(user_input)
+    elif input_type.lower() == "image":
+        try:
+            image_data = json.loads(user_input)
+            return analyze_image(image_data)
+        except json.JSONDecodeError:
+            st.error("Invalid image data format")
+            return None
+        except Exception as e:
+            st.error(f"Error processing image: {str(e)}")
+            return None
+    else:
+        st.error(f"Unsupported input type: {input_type}")
         return None
 
 def generate_optimized_prompt(analysis, input_type="text"):
     """Generate optimized prompt based on analysis and context"""
     
-    context_specific = f"""
-    Consider these specific requirements:
-    - Purpose: {st.session_state.additional_details_str}
-    - Style elements from the analysis: {analysis.get('visual_analysis', {}).get('style_analysis', '')}
-    - Mood elements from the analysis: {analysis.get('visual_analysis', {}).get('mood_and_tone', '')}
-    """
+    if input_type.lower() == "image":
+        context_specific = f"""
+        Consider these specific requirements:
+        - Purpose: {st.session_state.additional_details_str}
+        - Style elements from the analysis: {analysis.get('visual_analysis', {}).get('style_analysis', '')}
+        - Mood elements from the analysis: {analysis.get('visual_analysis', {}).get('mood_and_tone', '')}
+        """
+    elif input_type.lower() == "text":
+        context_specific = f"""
+        Consider these specific requirements:
+        - Purpose: {analysis.get('detected_purpose', '')}
+        - Key themes: {analysis.get('text_analysis', {}).get('key_themes', '')}
+        - Tone and style: {analysis.get('text_analysis', {}).get('tone_and_style', '')}
+        """
+    else:  # code
+        context_specific = f"""
+        Consider these specific requirements:
+        - Language: {analysis.get('detected_language', '')}
+        - Purpose: {analysis.get('code_analysis', {}).get('purpose', '')}
+        - Technical requirements: {analysis.get('code_analysis', {}).get('technical_requirements', '')}
+        """
     
     optimization_prompt = [
         {
@@ -182,8 +292,7 @@ def generate_optimized_prompt(analysis, input_type="text"):
             "content": """You are an expert prompt optimizer who excels at creating detailed, context-aware prompts.
             Consider:
             - Specific requirements and context
-            - Visual style and elements
-            - Mood and atmosphere
+            - Style and tone elements
             - Technical specifications
             - Practical applications
             
@@ -196,10 +305,9 @@ def generate_optimized_prompt(analysis, input_type="text"):
         {
             "role": "user",
             "content": f"""Create an optimized prompt based on this analysis and context:
-            Role: {analysis['detected_role']}
-            Task: {analysis['task_description']}
-            Base Instruction: {analysis['base_instruction']}
-            {context_specific if input_type.lower() == "image" else ""}"""
+            Task: {analysis.get('task_description', '')}
+            Base Instruction: {analysis.get('base_instruction', '')}
+            {context_specific}"""
         }
     ]
     
