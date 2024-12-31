@@ -87,32 +87,41 @@ def analyze_text(text_input):
     analysis_prompt = [
         {
             "role": "system",
-            "content": """You are an expert prompt engineer who excels at:
-            1. Understanding user requirements and context
-            2. Identifying key themes and objectives
-            3. Creating effective prompts for various purposes
-            4. Optimizing language for clarity and impact
+            "content": """You are an expert prompt engineer specializing in creating effective prompts for AI models. Your task is to:
+            1. Analyze the user's input to understand their intent
+            2. Create a set of optimized prompts that will achieve their goal
+            3. Provide variations with different approaches and styles
+
+            For example, if the user input is "New Year celebration", you should:
+            - Identify the core theme (celebration, festivity, new beginnings)
+            - Consider different aspects (visual, emotional, cultural)
+            - Create prompts that capture various perspectives
 
             Provide your analysis in the following JSON format:
             {
-                "detected_purpose": "The main goal or purpose identified in the text",
-                "text_analysis": {
-                    "key_themes": "Main themes and concepts identified",
-                    "tone_and_style": "Analysis of the desired tone and style",
-                    "requirements": "Specific requirements or constraints identified",
-                    "target_audience": "Intended audience or use case"
+                "core_theme": "The central theme or concept",
+                "prompt_analysis": {
+                    "intent": "What the user wants to achieve",
+                    "key_elements": ["List of important elements to include"],
+                    "style_suggestions": ["List of potential styles or approaches"],
+                    "variations": ["Different angles or perspectives to consider"]
                 },
-                "task_description": "Clear description of what needs to be achieved",
-                "base_instruction": "Core instruction derived from the input",
-                "example_prompts": ["List of 3 alternative prompts optimized for the purpose"],
-                "reasoning": "Explanation of the analysis and prompt choices"
+                "optimized_prompts": {
+                    "detailed": "A comprehensive, detailed prompt",
+                    "concise": "A shorter, focused version",
+                    "creative": "An artistic or imaginative take"
+                },
+                "additional_suggestions": ["List of tips or modifications"],
+                "reasoning": "Explanation of your prompt design choices"
             }"""
         },
         {
             "role": "user",
-            "content": f"""Analyze this text input and create optimized prompts:
+            "content": f"""Create optimized prompts based on this input:
 
-            {text_input}"""
+            {text_input}
+
+            Consider different approaches and provide variations that could work well for different purposes."""
         }
     ]
     
@@ -274,9 +283,10 @@ def generate_optimized_prompt(analysis, input_type="text"):
     elif input_type.lower() == "text":
         context_specific = f"""
         Consider these specific requirements:
-        - Purpose: {analysis.get('detected_purpose', '')}
-        - Key themes: {analysis.get('text_analysis', {}).get('key_themes', '')}
-        - Tone and style: {analysis.get('text_analysis', {}).get('tone_and_style', '')}
+        - Core Theme: {analysis.get('core_theme', '')}
+        - Intent: {analysis.get('prompt_analysis', {}).get('intent', '')}
+        - Key Elements: {', '.join(analysis.get('prompt_analysis', {}).get('key_elements', []))}
+        - Style Suggestions: {', '.join(analysis.get('prompt_analysis', {}).get('style_suggestions', []))}
         """
     else:  # code
         context_specific = f"""
@@ -305,13 +315,14 @@ def generate_optimized_prompt(analysis, input_type="text"):
         {
             "role": "user",
             "content": f"""Create an optimized prompt based on this analysis and context:
-            Task: {analysis.get('task_description', '')}
-            Base Instruction: {analysis.get('base_instruction', '')}
             {context_specific}"""
         }
     ]
     
     try:
+        if input_type.lower() == "text":
+            # For text input, return the detailed prompt from the analysis
+            return analysis.get('optimized_prompts', {}).get('detailed', '')
         return call_api(optimization_prompt)
     except Exception as e:
         st.error(f"Error generating optimized prompt: {str(e)}")
@@ -442,53 +453,119 @@ if st.button("Analyze & Generate Prompts"):
                                 st.markdown(gemini_analysis)
                         
                         with st.expander("🎨 Detailed Analysis", expanded=True):
-                            if 'visual_analysis' in analysis:
+                            if input_type.lower() == "image" and 'visual_analysis' in analysis:
                                 visual = analysis['visual_analysis']
                                 for key, value in visual.items():
                                     st.write(f"**{key.replace('_', ' ').title()}:**")
                                     st.info(value)
+                            elif input_type.lower() == "text":
+                                st.write("**Core Theme:**")
+                                st.info(analysis.get('core_theme', ''))
+                                
+                                st.write("**Prompt Analysis:**")
+                                prompt_analysis = analysis.get('prompt_analysis', {})
+                                st.write("*Intent:*")
+                                st.info(prompt_analysis.get('intent', ''))
+                                
+                                st.write("*Key Elements:*")
+                                for elem in prompt_analysis.get('key_elements', []):
+                                    st.success(f"• {elem}")
+                                
+                                st.write("*Style Suggestions:*")
+                                for style in prompt_analysis.get('style_suggestions', []):
+                                    st.info(f"• {style}")
+                                
+                                st.write("*Variations:*")
+                                for var in prompt_analysis.get('variations', []):
+                                    st.warning(f"• {var}")
                     
                     with col2:
                         with st.expander("💭 Reasoning", expanded=True):
                             st.info(analysis['reasoning'])
+                        
+                        if input_type.lower() == "text":
+                            with st.expander("🎯 Additional Suggestions", expanded=True):
+                                for suggestion in analysis.get('additional_suggestions', []):
+                                    st.success(f"• {suggestion}")
                 
                 # Prompts section with full width
                 st.subheader("✨ Generated Prompts")
                 
-                # Optimized prompt first
-                with st.expander("Optimized Prompt", expanded=True):
-                    with st.spinner("Generating optimized prompt..."):
-                        optimized_prompt = generate_optimized_prompt(analysis, input_type.lower())
-                        if optimized_prompt:
-                            st.success(optimized_prompt)
-                
-                # Alternative prompts below
-                for i, prompt in enumerate(analysis['example_prompts'], 1):
-                    with st.expander(f"Alternative Prompt {i}", expanded=True):
-                        st.text_area(f"Alternative {i}", value=prompt, height=150, key=f"alt_prompt_{i}", disabled=True)
+                if input_type.lower() == "text":
+                    # Display the three types of prompts for text input
+                    optimized_prompts = analysis.get('optimized_prompts', {})
+                    
+                    with st.expander("Detailed Prompt", expanded=True):
+                        detailed = optimized_prompts.get('detailed', '')
+                        st.success(detailed)
+                        if st.button("📋 Copy Detailed", key="copy_detailed"):
+                            st.code(detailed)
+                            st.success("✅ Detailed prompt copied!")
+                    
+                    with st.expander("Concise Prompt", expanded=True):
+                        concise = optimized_prompts.get('concise', '')
+                        st.success(concise)
+                        if st.button("📋 Copy Concise", key="copy_concise"):
+                            st.code(concise)
+                            st.success("✅ Concise prompt copied!")
+                    
+                    with st.expander("Creative Prompt", expanded=True):
+                        creative = optimized_prompts.get('creative', '')
+                        st.success(creative)
+                        if st.button("📋 Copy Creative", key="copy_creative"):
+                            st.code(creative)
+                            st.success("✅ Creative prompt copied!")
+                else:
+                    # Original prompt display for image and code
+                    with st.expander("Optimized Prompt", expanded=True):
+                        with st.spinner("Generating optimized prompt..."):
+                            optimized_prompt = generate_optimized_prompt(analysis, input_type.lower())
+                            if optimized_prompt:
+                                st.success(optimized_prompt)
+                    
+                    # Alternative prompts below
+                    for i, prompt in enumerate(analysis['example_prompts'], 1):
+                        with st.expander(f"Alternative Prompt {i}", expanded=True):
+                            st.text_area(f"Alternative {i}", value=prompt, height=150, key=f"alt_prompt_{i}", disabled=True)
                 
                 # Clean Prompts Display Section
                 st.divider()
                 st.subheader("🎯 Clean Prompts")
                 st.write("Copy-ready prompts without explanations:")
                 
-                # Create two columns for the prompts
-                prompt_col1, prompt_col2 = st.columns([1, 1])
-                
-                with prompt_col1:
-                    st.markdown("**✨ Optimized Prompt:**")
-                    st.text_area("", value=optimized_prompt, height=150, key="clean_opt", disabled=True)
-                    if st.button("📋 Copy", key="copy_opt"):
-                        st.code(optimized_prompt)
-                        st.success("✅ Optimized prompt copied!")
-                
-                with prompt_col2:
-                    for i, prompt in enumerate(analysis['example_prompts'], 1):
-                        st.markdown(f"**Alternative {i}:**")
-                        st.text_area("", value=prompt, height=150, key=f"clean_alt_{i}", disabled=True)
-                        if st.button(f"📋 Copy", key=f"copy_alt_{i}"):
-                            st.code(prompt)
-                            st.success(f"✅ Alternative {i} copied!")
+                if input_type.lower() == "text":
+                    # Create three columns for text prompts
+                    clean_col1, clean_col2, clean_col3 = st.columns([1, 1, 1])
+                    
+                    with clean_col1:
+                        st.markdown("**✨ Detailed:**")
+                        st.text_area("", value=optimized_prompts.get('detailed', ''), height=150, key="clean_detailed", disabled=True)
+                    
+                    with clean_col2:
+                        st.markdown("**💫 Concise:**")
+                        st.text_area("", value=optimized_prompts.get('concise', ''), height=150, key="clean_concise", disabled=True)
+                    
+                    with clean_col3:
+                        st.markdown("**🎨 Creative:**")
+                        st.text_area("", value=optimized_prompts.get('creative', ''), height=150, key="clean_creative", disabled=True)
+                else:
+                    # Original two-column layout for image and code
+                    prompt_col1, prompt_col2 = st.columns([1, 1])
+                    
+                    with prompt_col1:
+                        st.markdown("**✨ Optimized Prompt:**")
+                        st.text_area("", value=optimized_prompt, height=150, key="clean_opt", disabled=True)
+                        if st.button("📋 Copy", key="copy_opt"):
+                            st.code(optimized_prompt)
+                            st.success("✅ Optimized prompt copied!")
+                    
+                    with prompt_col2:
+                        for i, prompt in enumerate(analysis['example_prompts'], 1):
+                            st.markdown(f"**Alternative {i}:**")
+                            st.text_area("", value=prompt, height=150, key=f"clean_alt_{i}", disabled=True)
+                            if st.button(f"📋 Copy", key=f"copy_alt_{i}"):
+                                st.code(prompt)
+                                st.success(f"✅ Alternative {i} copied!")
                 
                 # Remove the old copy buttons section since we have the clean copy functionality above
                 st.divider()
