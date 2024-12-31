@@ -6,4 +6,4 @@ Pillow==10.2.0
 pyperclip==1.8.2
 llama-index-core>=0.10.1
 google-generativeai>=0.3.2
-promptwizard @ git+https://github.com/zlusa/promptwizard.git 
+git+https://github.com/zlusa/prompto.git 
