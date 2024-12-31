@@ -20,11 +20,14 @@ load_dotenv()
 if 'additional_details_str' not in st.session_state:
     st.session_state.additional_details_str = ""
 
-# Configure Gemini
-GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY')
+# Configure Gemini - First try to get API key from Streamlit secrets, then fall back to .env
+GOOGLE_API_KEY = st.secrets.get("GOOGLE_API_KEY") or os.getenv('GOOGLE_API_KEY')
 if not GOOGLE_API_KEY:
-    st.error("Please set GOOGLE_API_KEY in your .env file")
+    st.error("Please set GOOGLE_API_KEY in your Streamlit secrets or .env file")
     st.stop()
+
+# Print the first few characters of the API key for debugging (remove in production)
+st.write(f"Using API key starting with: {GOOGLE_API_KEY[:5]}...")
 
 genai.configure(api_key=GOOGLE_API_KEY)
 model = genai.GenerativeModel('gemini-2.0-flash-exp')
