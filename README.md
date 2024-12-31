@@ -36,7 +36,7 @@ pip install -r requirements.txt
      GOOGLE_API_KEY=your_api_key_here
      ```
 
-## Running the Application
+## Running the Application Locally
 
 Start the Streamlit application:
 ```bash
@@ -44,6 +44,25 @@ streamlit run prompt_analyzer_app.py
 ```
 
 The application will open in your default web browser.
+
+## Deployment on Streamlit Cloud
+
+1. Push your code to GitHub if you haven't already
+2. Visit [Streamlit Cloud](https://share.streamlit.io)
+3. Sign in with your GitHub account
+4. Click "New app" and select your repository
+5. Set up the deployment:
+   - Main file path: `prompt_analyzer_app.py`
+   - Python version: 3.12
+6. Add your secrets in Streamlit Cloud:
+   - Go to "Advanced settings" > "Secrets"
+   - Add your environment variables:
+     ```toml
+     GOOGLE_API_KEY = "your_api_key_here"
+     ```
+7. Click "Deploy!"
+
+Your app will be available at `https://your-app-name.streamlit.app`
 
 ## Usage
 
