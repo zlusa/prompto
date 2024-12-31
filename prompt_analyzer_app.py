@@ -1,11 +1,14 @@
-import streamlit as st
+# Standard library imports
 import os
-from dotenv import load_dotenv
+import io
 import json
+import base64
+
+# Third-party imports
+import streamlit as st
+from dotenv import load_dotenv
 import pandas as pd
 import PIL.Image
-import io
-import base64
 import google.generativeai as genai
 from google.generativeai.types import HarmCategory, HarmBlockThreshold
 import pyperclip
