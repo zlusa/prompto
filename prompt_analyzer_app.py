@@ -658,6 +658,63 @@ if st.button("Analyze & Generate Prompts"):
                         json.dump(results, f, indent=2)
                     
                     st.success(f"Results saved to {filename}")
+                
+                # After the Clean Prompts section, add the Optimized Prompt section
+                st.divider()
+                st.subheader("🚀 Optimized Prompt")
+                st.write("Complete prompt incorporating all analysis details:")
+                
+                if input_type.lower() == "text":
+                    # Combine all analysis information into a comprehensive prompt
+                    roles = analysis.get('detected_roles', {})
+                    task = analysis.get('task_analysis', {})
+                    expert = analysis.get('expert_perspective', {})
+                    role_prompts = analysis.get('role_specific_prompts', {})
+                    
+                    optimized_prompt = f"""You are a {roles.get('primary_role', '')} with expertise in {', '.join(roles.get('secondary_roles', []))}.
+
+Task: {task.get('core_objective', '')}
+
+Requirements:
+{chr(10).join([f"• {req}" for req in task.get('key_requirements', [])])}
+
+Technical Approach:
+{expert.get('approach', '')}
+
+Key Technical Considerations:
+{chr(10).join([f"• {cons}" for cons in expert.get('key_considerations', [])])}
+
+Implementation Steps:
+{chr(10).join([f"• {step}" for step in role_prompts.get('step_by_step', [])])}
+
+Technical Specifications:
+{chr(10).join([f"• {tech}" for tech in role_prompts.get('advanced_techniques', [])])}
+
+Quality Requirements:
+{chr(10).join([f"• {check}" for check in role_prompts.get('quality_checks', [])])}
+
+Target Audience: {task.get('target_audience', '')}
+
+Success Criteria:
+{chr(10).join([f"• {crit}" for crit in task.get('success_criteria', [])])}
+
+Best Practices:
+{chr(10).join([f"• {tip}" for tip in expert.get('professional_tips', [])])}
+
+Avoid These Common Pitfalls:
+{chr(10).join([f"• {pitfall}" for pitfall in expert.get('common_pitfalls', [])])}"""
+
+                    # Display the optimized prompt in a code block
+                    st.code(optimized_prompt, language="markdown")
+                    
+                    # Add copy button
+                    if st.button("📋 Copy Optimized Prompt", key="copy_optimized", use_container_width=True):
+                        st.code(optimized_prompt)
+                        st.success("✅ Optimized prompt copied!")
+                
+                # Save Results button (keep existing code)
+                st.divider()
+                if st.button("💾 Save Results", key="save_results", use_container_width=True):
     else:
         st.warning("Please enter some input first!")
 
