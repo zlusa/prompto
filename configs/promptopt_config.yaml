@@ -1,0 +1,20 @@
+answer_format: Provide a clear and concise answer.
+base_instruction: Solve each problem step by step showing your work
+few_shot_count: 2
+generate_expert_identity: true
+generate_intent_keywords: false
+generate_reasoning: true
+max_eval_batches: 2
+min_correct_count: 1
+mutate_refine_iterations: 2
+mutation_rounds: 2
+num_train_examples: 5
+prompt_technique_name: critique_n_refine
+questions_batch_size: 1
+refine_instruction: true
+refine_task_eg_iterations: 2
+seen_set_size: 5
+style_variation: 2
+task_description: '3'
+top_n: 1
+unique_model_id: gemini-2.0-flash-exp

@@ -1,0 +1,22 @@
+{
+  "analysis": {
+    "analysis": "The prompt is very high-level and describes a desired outcome (building an app) rather than a visual scene. It lacks any visual elements, making it unsuitable for image generation. It needs to be reinterpreted to focus on a visual representation related to the concept of a water intake app.",
+    "improved_prompts": {
+      "basic": "A minimalist app interface design for a water intake tracker, featuring a glass of water icon and a progress bar.",
+      "detailed": "A photorealistic close-up of a smartphone screen displaying a water intake app interface. The app features a clean, modern design with a vibrant blue water droplet icon, a circular progress bar, and subtle glassmorphism effects. The background is a soft, blurred gradient. The lighting is bright and even, simulating a natural indoor setting.",
+      "variations": [
+        "A stylized illustration of a water intake app interface, with a playful cartoon water glass character and a colorful progress wheel.",
+        "A wireframe sketch of a water intake app, focusing on the layout and user flow, with annotations indicating key features.",
+        "A flat lay composition featuring a smartphone displaying a water intake app, alongside a water bottle, a fitness tracker, and a few healthy snacks."
+      ]
+    },
+    "tips": [
+      "Focus on visual elements: Translate abstract concepts into concrete visual objects, scenes, or interfaces.",
+      "Specify style and details: Include details about the desired style (e.g., photorealistic, minimalist, cartoon), lighting, and composition.",
+      "Use keywords related to UI/UX: Incorporate terms like 'app interface,' 'progress bar,' 'icon,' 'wireframe,' 'mockup' to guide the AI towards generating relevant images."
+    ]
+  },
+  "prompt_type": "text",
+  "input": "I want to build a water intake app with sveltekit\n",
+  "timestamp": "2024-12-31T16:51:33.228553"
+}

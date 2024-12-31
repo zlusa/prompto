@@ -15,36 +15,105 @@ import os
 logger = get_glue_logger(__name__)
 
 def call_api(messages):
-
     from openai import OpenAI
     from azure.identity import get_bearer_token_provider, AzureCliCredential
     from openai import AzureOpenAI
+    import google.generativeai as genai
+    import json
 
-    if os.environ['USE_OPENAI_API_KEY'] == "True":
-        client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+    if os.environ.get('USE_OPENAI_API_KEY') == 'True':
+        try:
+            if "gemini" in os.environ["OPENAI_MODEL_NAME"].lower():
+                # Try using OpenAI compatibility layer first
+                client = OpenAI(
+                    api_key=os.environ["OPENAI_API_KEY"],
+                    base_url=os.environ.get("OPENAI_API_BASE")
+                )
 
-        response = client.chat.completions.create(
-        model=os.environ["OPENAI_MODEL_NAME"],
-        messages=messages,
-        temperature=0.0,
-        )
+                try:
+                    response = client.chat.completions.create(
+                        model=os.environ["OPENAI_MODEL_NAME"],
+                        messages=messages,
+                        temperature=0.0,
+                    )
+                    return response.choices[0].message.content
+                except Exception as openai_error:
+                    logger.warning(f"OpenAI compatibility layer failed: {str(openai_error)}")
+                    logger.info("Falling back to native Gemini API...")
+                    
+                    # Fallback to native Gemini API
+                    genai.configure(api_key=os.environ["OPENAI_API_KEY"])
+                    
+                    # Convert OpenAI message format to Gemini format
+                    parts = []
+                    for msg in messages:
+                        role = msg.get("role", "")
+                        content = msg.get("content", "")
+                        
+                        if role == "system":
+                            parts.append(f"Instructions: {content}\n\n")
+                        elif role == "user":
+                            parts.append(f"User: {content}\n")
+                        elif role == "assistant":
+                            parts.append(f"Assistant: {content}\n")
+                    
+                    # Try Gemini 2.0 Flash first
+                    try:
+                        model = genai.GenerativeModel("gemini-2.0-flash-exp")
+                    except Exception as e:
+                        logger.warning(f"Gemini 2.0 Flash failed: {str(e)}")
+                        logger.info("Falling back to Gemini 1.5 Flash...")
+                        model = genai.GenerativeModel("gemini-1.5-flash")
+                    
+                    response = model.generate_content(
+                        "".join(parts),
+                        generation_config={
+                            "temperature": 0.0,
+                            "top_p": 1,
+                            "top_k": 1,
+                            "max_output_tokens": 8192,  # Maximum for Flash models
+                        }
+                    )
+                    
+                    if response.prompt_feedback:
+                        logger.info(f"Prompt feedback: {response.prompt_feedback}")
+                    
+                    if hasattr(response, 'error'):
+                        raise GlueLLMException("Unable to generate response", response.error)
+                    
+                    return response.text
+            else:
+                # Regular OpenAI API call
+                client = OpenAI(
+                    api_key=os.environ["OPENAI_API_KEY"],
+                    base_url=os.environ.get("OPENAI_API_BASE")
+                )
+                response = client.chat.completions.create(
+                    model=os.environ["OPENAI_MODEL_NAME"],
+                    messages=messages,
+                    temperature=0.0,
+                )
+                return response.choices[0].message.content
+        except Exception as e:
+            logger.error(f"Error calling API: {str(e)}")
+            raise GlueLLMException("API error", e)
     else:
+        # Existing Azure code
         token_provider = get_bearer_token_provider(
-                AzureCliCredential(), "https://cognitiveservices.azure.com/.default"
-            )
+            AzureCliCredential(), "https://cognitiveservices.azure.com/.default"
+        )
         client = AzureOpenAI(
             api_version=os.environ["OPENAI_API_VERSION"],
             azure_endpoint=os.environ["AZURE_OPENAI_ENDPOINT"],
             azure_ad_token_provider=token_provider
-            )
+        )
         response = client.chat.completions.create(
             model=os.environ["AZURE_OPENAI_DEPLOYMENT_NAME"],
             messages=messages,
             temperature=0.0,
         )
-
-    prediction = response.choices[0].message.content
-    return prediction
+        prediction = response.choices[0].message.content
+        return prediction
 
 
 class LLMMgr:

@@ -1,0 +1,8 @@
+assistant_llm:
+  prompt_opt: gemini-2.0-flash-exp
+description: Custom prompt optimization
+dir_info:
+  base_dir: logs
+  log_dir_name: glue_logs
+experiment_name: custom_prompt
+mode: offline

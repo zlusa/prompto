@@ -1,0 +1,23 @@
+{
+  "analysis": {
+    "analysis": "The prompt is extremely basic and lacks any visual or stylistic direction. It specifies the functionality (a water intake app) and the technology (SvelteKit) but provides no information about the desired aesthetic, user interface, or even the type of image to generate. This will likely result in very generic and uninspired outputs. It's more of a request for a software development task than an image generation prompt.",
+    "improved_prompts": {
+      "basic": "A clean and modern mobile app interface for tracking water intake, featuring a minimalist design with a water droplet icon.",
+      "detailed": "A photorealistic render of a mobile app UI for water intake tracking, displayed on an iPhone 14 Pro. The app features a glass of water filling up as the user logs their intake, with a vibrant blue color scheme, subtle glass reflections, and a clean, sans-serif font. The background is a soft, blurred gradient. Lighting is soft and diffused, creating a calming effect.",
+      "variations": [
+        "A conceptual illustration of a water intake app, with a focus on the user journey. The design is playful and colorful, using abstract shapes and icons to represent water and hydration.",
+        "A wireframe mockup of a water intake app, showcasing the key screens and user flow. The style is technical and precise, with clear annotations and labels.",
+        "A futuristic holographic display of a water intake app, with floating icons and data visualizations. The color scheme is neon and vibrant, with a high-tech feel.",
+        "A dark mode mobile app interface for tracking water intake, featuring a sleek design with a circular progress bar and a calming deep blue color palette."
+      ]
+    },
+    "tips": [
+      "Always specify the type of image you want (e.g., photorealistic render, illustration, mockup).",
+      "Include details about the visual style, color scheme, and lighting to guide the AI.",
+      "Think about the user interface elements and how they would be represented visually (e.g., buttons, progress bars, icons)."
+    ]
+  },
+  "prompt_type": "text",
+  "input": "build a water intake app with sveltekit\n\n\n",
+  "timestamp": "2024-12-31T16:55:57.387756"
+}
