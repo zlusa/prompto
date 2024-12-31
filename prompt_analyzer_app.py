@@ -3,7 +3,6 @@ import os
 from dotenv import load_dotenv
 import json
 import pandas as pd
-from llm_utils import call_api
 import PIL.Image
 import io
 import base64
@@ -22,6 +21,18 @@ if not GOOGLE_API_KEY:
 
 genai.configure(api_key=GOOGLE_API_KEY)
 model = genai.GenerativeModel('gemini-2.0-flash-exp')
+
+def call_api(messages):
+    """Call the Gemini API with the given messages."""
+    try:
+        # Convert messages to a single prompt
+        prompt = "\n\n".join([f"{msg['role']}: {msg['content']}" for msg in messages])
+        
+        # Generate response
+        response = model.generate_content(prompt, stream=False)
+        return response.text
+    except Exception as e:
+        raise Exception(f"Error calling Gemini API: {str(e)}")
 
 def analyze_image_with_gemini(image_bytes, additional_context=""):
     """Analyze image using Gemini model"""
